@@ -1,0 +1,28 @@
+
+Background
+
+Autopilot
+
+
+
+UI
+	MAIN MENU
+	
+	LEVEL SELECTION
+		-easy
+		-medium
+		-hard
+	
+	OPTIONS
+		-music selection
+		-sound volume
+		-screen size
+		- (game speed)
+		
+		-controls
+		-hull type
+
+	REPLAYS
+		-watch replays
+		-(continue from replay)
+				
