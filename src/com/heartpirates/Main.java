@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -13,8 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
-
-import com.esotericsoftware.kryo.Kryo;
 
 public class Main extends Canvas implements Runnable {
 
@@ -97,7 +97,7 @@ public class Main extends Canvas implements Runnable {
 			map.initMap();
 			testImg = map.getImage();
 
-			player = new Player(this, jeeves.i.ships[1][0]);
+			player = new Player(this, Jeeves.i.ships[1][0]);
 			player.x = 0;
 			player.y = 10;
 			sprites.add(player);
@@ -115,9 +115,23 @@ public class Main extends Canvas implements Runnable {
 
 			this.addKeyListener(keyboard);
 
+			frame.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					// save the replay
+					Replay rep = rec.getReplay();
+					try {
+						rep.saveKryo("rep_c_kryo_" + System.currentTimeMillis()
+								/ 1000);
+					} catch (IOException ioexc) {
+						ioexc.printStackTrace();
+					}
+				}
+			});
+
 			replay = new Replay();
 			try {
-				replay.load("replay_kryotest.crp");
+				replay.loadKryo("replay_kryotest.crp");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -256,15 +270,15 @@ public class Main extends Canvas implements Runnable {
 			}
 		}
 
-		if (level.mapCount == 50) {
-			Replay rep = rec.getReplay();
-			try {
-				rep.saveKryo("rep_kryo_" + System.currentTimeMillis() / 1000);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			isRunning = false;
-		}
+		// if (level.mapCount == 50) {
+		// Replay rep = rec.getReplay();
+		// try {
+		// rep.saveKryo("rep_kryo_" + System.currentTimeMillis() / 1000);
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// isRunning = false;
+		// }
 
 		tickCount++;
 	}
