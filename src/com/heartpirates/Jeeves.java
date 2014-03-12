@@ -6,14 +6,17 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import com.esotericsoftware.kryo.Kryo;
+
 public class Jeeves {
 
-	public Jeeves i = null;
+	public static Jeeves i = null;
 
 	BufferedImage tiles[][];
 	BufferedImage ships[][];
 
 	Radio radio;
+	public Kryo kryo;
 
 	Jeeves() {
 		if (i == null) {
@@ -22,6 +25,8 @@ public class Jeeves {
 			radio = new Radio();
 			radio.loadMusic("snd/shakeass.tm8");
 			loadImages();
+			kryo = new Kryo();
+			kryo.register(Replay.class);
 		}
 	}
 

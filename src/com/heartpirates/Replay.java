@@ -1,12 +1,15 @@
 package com.heartpirates;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
+
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 public class Replay {
 
@@ -18,6 +21,22 @@ public class Replay {
 		if (n >= length)
 			return 100;
 		return bytes[n];
+	}
+
+	public void saveKryo(String name) throws FileNotFoundException {
+		Output output = new Output(new FileOutputStream(name));
+		Jeeves.i.kryo.writeObject(output, this);
+		output.close();
+	}
+
+	public void loadKryo(String name) throws FileNotFoundException {
+		Input input = new Input(new FileInputStream(name));
+		Replay rep = Jeeves.i.kryo.readObject(input, Replay.class);
+		input.close();
+
+		this.seed = rep.seed;
+		this.length = rep.length;
+		this.bytes = rep.bytes;
 	}
 
 	public void save(String name) throws MalformedURLException, IOException {
@@ -64,9 +83,9 @@ public class Replay {
 			bout.write(buf, 0, n);
 		}
 		bout.flush();
-		
+
 		buffer = ByteBuffer.wrap(bout.toByteArray());
-		
+
 		this.seed = buffer.getLong();
 		this.length = buffer.getInt();
 		this.bytes = new byte[this.length];

@@ -14,6 +14,8 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
+import com.esotericsoftware.kryo.Kryo;
+
 public class Main extends Canvas implements Runnable {
 
 	public static final int WIDTH = 120;
@@ -115,7 +117,7 @@ public class Main extends Canvas implements Runnable {
 
 			replay = new Replay();
 			try {
-				replay.load("replay_test.crp");
+				replay.load("replay_kryotest.crp");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -248,18 +250,16 @@ public class Main extends Canvas implements Runnable {
 
 			// record
 			rec.add((int) player.y);
-			
+
 			for (Sprite s : sprites) {
 				s.tick();
 			}
 		}
-		
-		
 
 		if (level.mapCount == 50) {
 			Replay rep = rec.getReplay();
 			try {
-				rep.save("rep_" + System.currentTimeMillis() / 1000);
+				rep.saveKryo("rep_kryo_" + System.currentTimeMillis() / 1000);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
