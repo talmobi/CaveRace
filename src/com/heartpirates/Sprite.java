@@ -7,11 +7,11 @@ public class Sprite {
 
 	boolean remove = false;
 	
-	double x = 0;
-	double y = 0;
-	int w;
-	int h;
-	BufferedImage image;
+	protected double x = 0;
+	protected double y = 0;
+	protected int w;
+	protected int h;
+	public BufferedImage image;
 
 	public Sprite(int w, int h) {
 		this.w = w;

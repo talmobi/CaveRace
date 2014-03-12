@@ -13,7 +13,7 @@ public class Jeeves {
 	public static Jeeves i = null;
 
 	BufferedImage tiles[][];
-	BufferedImage ships[][];
+	public BufferedImage ships[][];
 
 	Radio radio;
 	public Kryo kryo;
@@ -23,7 +23,7 @@ public class Jeeves {
 			i = this;
 
 			radio = new Radio();
-			radio.loadMusic("snd/shakeass.tm8");
+			radio.loadMusic("mus/Swift_Ray.sap");
 			loadImages();
 			kryo = new Kryo();
 			kryo.register(Replay.class);

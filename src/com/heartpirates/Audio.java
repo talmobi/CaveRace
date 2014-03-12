@@ -55,7 +55,7 @@ public class Audio {
 				// FloatControl fc = (FloatControl)
 				// clips[n].getControl(FloatControl.Type.MASTER_GAIN);
 				// fc.setValue(-10f);
-				setVolume(.8f, clips[n]);
+				setVolume(.6f, clips[n]);
 				clips[n].setFramePosition(0);
 				clips[n].start();
 			}

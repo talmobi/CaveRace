@@ -5,7 +5,7 @@ import java.awt.event.KeyListener;
 
 public class Keyboard implements KeyListener {
 
-	boolean keys[] = new boolean[1024];
+	public boolean keys[] = new boolean[1024];
 
 	final private Radio radio;
 
@@ -25,11 +25,13 @@ public class Keyboard implements KeyListener {
 
 	public void update() {
 		if (keys[KeyEvent.VK_1]) {
-			fpsMode = FPS_MODE.low;
+			Main.gameState = Main.State.TITLE;
 		} else if (keys[KeyEvent.VK_2]) {
-			fpsMode = FPS_MODE.medium;
+			Main.gameState = Main.State.MENU;
 		} else if (keys[KeyEvent.VK_3]) {
-			fpsMode = FPS_MODE.high;
+			Main.gameState = Main.State.PLAY;
+		} else if (keys[KeyEvent.VK_4]) {
+			Main.gameState = Main.State.PAUSED;
 		}
 
 		else if (keys[KeyEvent.VK_P]) {

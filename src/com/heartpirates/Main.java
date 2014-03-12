@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -16,6 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
+
+import com.heartpirates.screens.MenuScreen;
+import com.heartpirates.screens.Screen;
+import com.heartpirates.screens.TitleScreen;
 
 public class Main extends Canvas implements Runnable {
 
@@ -36,10 +41,11 @@ public class Main extends Canvas implements Runnable {
 
 	int sleepTime = 1;
 	Jeeves jeeves;
-	Keyboard keyboard;
+	public Keyboard keyboard;
 	Map map;
 	Level level;
 
+	public Font TITLE_FONT;
 	public Font FONT;
 
 	BufferedImage screen = new BufferedImage(WIDTH, HEIGHT,
@@ -47,8 +53,8 @@ public class Main extends Canvas implements Runnable {
 	int[] pixels = ((DataBufferInt) screen.getRaster().getDataBuffer())
 			.getData();
 
-	BufferedImage titleScreen = new BufferedImage(WIDTH, HEIGHT,
-			BufferedImage.TYPE_INT_ARGB);
+	Screen titleScreen = new TitleScreen(this, WIDTH, HEIGHT);
+	Screen menuScreen = new MenuScreen(this, WIDTH, HEIGHT);
 
 	BufferedImage testImg = null;
 
@@ -68,26 +74,27 @@ public class Main extends Canvas implements Runnable {
 		TITLE, MENU, PLAY, PAUSED
 	}
 
-	State gameState = State.TITLE;
+	public static State gameState = State.TITLE;
+	State lastState = gameState;
 
 	Recorder rec = new Recorder(1L);
 	Replay replay;
 
 	public Main() {
 		try {
-			this.FONT = Font.createFont(Font.TRUETYPE_FONT,
-					this.getClass().getClassLoader().getResourceAsStream("font.ttf")).deriveFont(8f);
+			this.TITLE_FONT = Font.createFont(
+					Font.TRUETYPE_FONT,
+					this.getClass().getClassLoader()
+							.getResourceAsStream("titlefont.ttf")).deriveFont(
+					10f);
+			this.FONT = Font.createFont(
+					Font.TRUETYPE_FONT,
+					this.getClass().getClassLoader()
+							.getResourceAsStream("font.ttf")).deriveFont(14f);
 		} catch (Exception e) {
 			this.FONT = null;
 			e.printStackTrace();
 		}
-
-		Graphics g = titleScreen.getGraphics();
-		g.setFont(FONT);
-		g.setColor(bgColor);
-		g.fillRect(0, 0, WIDTH, HEIGHT);
-		g.setColor(fgColor);
-		g.drawString("Cave Race", WIDTH / 2 - 36, HEIGHT / 2 - 20);
 	}
 
 	public void init() {
@@ -105,7 +112,7 @@ public class Main extends Canvas implements Runnable {
 
 			Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
 			frame.setLocation((int) (ss.width - SCREEN_WIDTH * 1.5),
-					(int) (SCREEN_HEIGHT * 0.5));
+					(int) (SCREEN_HEIGHT * 0.5 + 10));
 
 			frame.add(this);
 			frame.pack();
@@ -239,21 +246,6 @@ public class Main extends Canvas implements Runnable {
 				e.printStackTrace();
 				break;
 			}
-
-			// check desired FPS
-			switch (keyboard.getFps()) {
-			case high:
-				gameState = State.PLAY;
-				break;
-			case low:
-				gameState = State.MENU;
-				break;
-			case medium:
-				gameState = State.TITLE;
-				break;
-			default:
-				break;
-			}
 		}
 
 		System.out.println("Game Closed.");
@@ -271,20 +263,34 @@ public class Main extends Canvas implements Runnable {
 
 	private void tick() {
 		updateKeyboard();
+		boolean[] keys = keyboard.keys;
 
 		if (gameState == State.PAUSED) {
-
 		}
 
 		else if (gameState == State.TITLE) {
-			
+			if (lastState != gameState) {
+				titleScreen.onSwitch();
+				jeeves.radio.stopMusic();
+			}
+
+			if (keys[KeyEvent.VK_SPACE] || keys[KeyEvent.VK_ENTER]) {
+				gameState = State.MENU;
+			}
 		}
 
 		else if (gameState == State.MENU) {
-
+			if (lastState != gameState) {
+				menuScreen.onSwitch();
+			}
+			menuScreen.tick();
 		}
 
 		else if (gameState == State.PLAY) {
+			if (lastState != gameState) {
+				jeeves.radio.playMusic();
+			}
+
 			level.tick();
 
 			// replay
@@ -299,6 +305,7 @@ public class Main extends Canvas implements Runnable {
 			}
 		}
 
+		lastState = gameState;
 		tickCount++;
 	}
 
@@ -312,11 +319,10 @@ public class Main extends Canvas implements Runnable {
 
 		switch (gameState) {
 		case MENU:
+			menuScreen.render(g);
 			break;
+
 		case PAUSED:
-
-			break;
-
 		case PLAY:
 
 			// draw sprites
@@ -334,7 +340,7 @@ public class Main extends Canvas implements Runnable {
 
 			break;
 		case TITLE:
-			g.drawImage(titleScreen, 0, 0, WIDTH, HEIGHT, null);
+			titleScreen.render(g);
 			break;
 		default:
 			break;
