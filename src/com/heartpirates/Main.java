@@ -3,6 +3,7 @@ package com.heartpirates;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -39,10 +40,15 @@ public class Main extends Canvas implements Runnable {
 	Map map;
 	Level level;
 
+	public Font FONT;
+
 	BufferedImage screen = new BufferedImage(WIDTH, HEIGHT,
 			BufferedImage.TYPE_INT_ARGB);
 	int[] pixels = ((DataBufferInt) screen.getRaster().getDataBuffer())
 			.getData();
+
+	BufferedImage titleScreen = new BufferedImage(WIDTH, HEIGHT,
+			BufferedImage.TYPE_INT_ARGB);
 
 	BufferedImage testImg = null;
 
@@ -54,6 +60,7 @@ public class Main extends Canvas implements Runnable {
 	Ghostpilot ghostpilot;
 
 	public final Color bgColor = new Color(0x202020);
+	public final Color fgColor = new Color(0xCFBFAD);
 
 	long keyPressTime = System.currentTimeMillis();
 
@@ -67,6 +74,20 @@ public class Main extends Canvas implements Runnable {
 	Replay replay;
 
 	public Main() {
+		try {
+			this.FONT = Font.createFont(Font.TRUETYPE_FONT,
+					this.getClass().getClassLoader().getResourceAsStream("font.ttf")).deriveFont(8f);
+		} catch (Exception e) {
+			this.FONT = null;
+			e.printStackTrace();
+		}
+
+		Graphics g = titleScreen.getGraphics();
+		g.setFont(FONT);
+		g.setColor(bgColor);
+		g.fillRect(0, 0, WIDTH, HEIGHT);
+		g.setColor(fgColor);
+		g.drawString("Cave Race", WIDTH / 2 - 36, HEIGHT / 2 - 20);
 	}
 
 	public void init() {
@@ -118,14 +139,22 @@ public class Main extends Canvas implements Runnable {
 			frame.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) {
-					// save the replay
-					Replay rep = rec.getReplay();
-					try {
-						rep.saveKryo("rep_c_kryo_" + System.currentTimeMillis()
-								/ 1000);
-					} catch (IOException ioexc) {
-						ioexc.printStackTrace();
-					}
+					new Thread(new Runnable() {
+
+						@Override
+						public void run() {
+							// save the replay
+							Replay rep = rec.getReplay();
+							try {
+								rep.saveKryo("replay_"
+										+ (System.currentTimeMillis() / 1000)
+										+ ".crp");
+							} catch (IOException ioexc) {
+								ioexc.printStackTrace();
+							}
+						}
+
+					}).start();
 				}
 			});
 
@@ -248,7 +277,7 @@ public class Main extends Canvas implements Runnable {
 		}
 
 		else if (gameState == State.TITLE) {
-
+			
 		}
 
 		else if (gameState == State.MENU) {
@@ -269,16 +298,6 @@ public class Main extends Canvas implements Runnable {
 				s.tick();
 			}
 		}
-
-		// if (level.mapCount == 50) {
-		// Replay rep = rec.getReplay();
-		// try {
-		// rep.saveKryo("rep_kryo_" + System.currentTimeMillis() / 1000);
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// isRunning = false;
-		// }
 
 		tickCount++;
 	}
@@ -315,6 +334,7 @@ public class Main extends Canvas implements Runnable {
 
 			break;
 		case TITLE:
+			g.drawImage(titleScreen, 0, 0, WIDTH, HEIGHT, null);
 			break;
 		default:
 			break;

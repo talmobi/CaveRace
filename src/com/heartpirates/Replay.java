@@ -1,12 +1,14 @@
 package com.heartpirates;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
-import java.util.zip.DeflaterInputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -15,6 +17,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 public class Replay {
+
+	static final String DIR = "replays";
 
 	long seed;
 	int length;
@@ -27,15 +31,25 @@ public class Replay {
 	}
 
 	public void saveKryo(String name) throws IOException {
+		Path p = FileSystems.getDefault().getPath(DIR, name);
+		File file = p.toFile();
+		
+		File dir = FileSystems.getDefault().getPath(DIR).toFile();
+		if (!dir.isDirectory() || !dir.exists())
+			dir.mkdir();
+
 		DeflaterOutputStream dos = new GZIPOutputStream(new FileOutputStream(
-				name));
+				file));
 		Output output = new Output(dos);
 		Jeeves.i.kryo.writeObject(output, this);
 		output.close();
 	}
 
 	public void loadKryo(String name) throws IOException {
-		GZIPInputStream din = new GZIPInputStream(new FileInputStream(name));
+		Path p = FileSystems.getDefault().getPath(DIR, name);
+		File file = p.toFile();
+		
+		GZIPInputStream din = new GZIPInputStream(new FileInputStream(file));
 		Input input = new Input(din);
 		Replay rep = Jeeves.i.kryo.readObject(input, Replay.class);
 		input.close();

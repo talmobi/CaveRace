@@ -162,4 +162,8 @@ public class Radio implements Runnable {
 		this.floatVolume = f;
 		fc.setValue(floatVolume);
 	}
+
+	public boolean isPlaying() {
+		return this.line.isActive();
+	}
 }
