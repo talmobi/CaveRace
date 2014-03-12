@@ -42,5 +42,8 @@ public class Entity extends Sprite {
 	public void tick() {
 		move();
 	}
+	
+	public void collide() {
+	}
 
 }

@@ -56,7 +56,7 @@ public class Player extends Entity {
 	
 	@Override
 	public void render(Graphics g) {
-//		super.render(g);
+		super.render(g);
 	}
 
 	@Override
@@ -65,30 +65,34 @@ public class Player extends Entity {
 		super.tick();
 
 		if (main.level.isBlocked((int) (x + 2), (int) (y + 5))) {
-//			System.out.println("BOOOM!!");
-
-			x = 0;
-			y = main.HEIGHT / 2;
+			collide();
 		}
+		
+		gravity = 0;
+	}
+	
+	@Override
+	public void collide() {
+		Audio.play(3);
 	}
 
 	public void updateKeyboard() {
 		Keyboard kb = main.keyboard;
 
 		if (kb.keys[KeyEvent.VK_Q]) {
-			yspeed -= speed;
+			yspeed -= 0.02;
 			lastPressed = System.currentTimeMillis();
 		}
 		if (kb.keys[KeyEvent.VK_W]) {
-			yspeed -= 0.05;
+			yspeed -= 0.04;
 			lastPressed = System.currentTimeMillis();
 		}
 		if (kb.keys[KeyEvent.VK_A]) {
-			yspeed += speed;
+			yspeed += 0.02;
 			lastPressed = System.currentTimeMillis();
 		}
 		if (kb.keys[KeyEvent.VK_S]) {
-			yspeed += 0.05;
+			yspeed += 0.04;
 			lastPressed = System.currentTimeMillis();
 		}
 	}

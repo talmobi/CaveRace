@@ -64,7 +64,7 @@ public class Radio implements Runnable {
 		int length;
 
 		try {
-			URL url = this.getClass().getResource(str);
+			URL url = this.getClass().getClassLoader().getResource(str);
 			InputStream is = url.openStream();
 			bytes = new byte[65 * 1024];
 			length = readAndClose(is, bytes);

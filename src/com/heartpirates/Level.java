@@ -96,6 +96,7 @@ public class Level {
 
 		updateBlockmap();
 		updateAutopilots();
+		
 	}
 
 	List<Map> mapList = new LinkedList<Map>();
@@ -138,6 +139,9 @@ public class Level {
 
 		levelThread.setPriority(Thread.MIN_PRIORITY);
 		levelThread.start();
+		
+		nextLevel2();
+		nextLevel2();
 	}
 
 	private void nextLevel2() {

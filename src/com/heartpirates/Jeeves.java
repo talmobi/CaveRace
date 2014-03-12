@@ -20,7 +20,7 @@ public class Jeeves {
 			i = this;
 
 			radio = new Radio();
-			radio.loadMusic("/snd/shakeass.tm8");
+			radio.loadMusic("snd/shakeass.tm8");
 			loadImages();
 		}
 	}
@@ -28,17 +28,17 @@ public class Jeeves {
 	private void loadImages() {
 		System.out.println("Loading images...");
 		if (i == this) {
-			tiles = loadImage(2, 2, "/tiles.png");
+			tiles = loadImage(2, 2, "tiles.png");
 			System.out.println(" tiles loaded.");
 
-			ships = loadImage(10, 10, "/ship.png");
+			ships = loadImage(10, 10, "ship.png");
 			System.out.println(" ships loaded.");
 		}
 		System.out.println("Loading images Done.");
 	}
 
 	private BufferedImage[][] loadImage(int w, int h, String str) {
-		URL url = this.getClass().getResource(str);
+		URL url = this.getClass().getClassLoader().getResource(str);
 
 		try {
 			BufferedImage bimg = ImageIO.read(url);

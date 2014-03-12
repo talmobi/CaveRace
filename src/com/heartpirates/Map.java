@@ -24,7 +24,7 @@ public class Map {
 	private Random bgRand = new Random();
 
 	List<Point> path = null;
-	boolean showPath = true;
+	boolean showPath = false; // draw blue path
 
 	private int size = 3;
 	private long seed;
