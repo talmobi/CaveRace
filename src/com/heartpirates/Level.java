@@ -40,6 +40,8 @@ public class Level {
 
 	Map map;
 	Map nextMap;
+	
+	public int tickCount = 0;
 
 	double speed = 1.6;
 	long seed = 1L;
@@ -71,6 +73,7 @@ public class Level {
 	}
 
 	public void tick() {
+		tickCount++;
 		// x -= Math.min(1, speed + (mapCount / 100.0));
 		x -= speed;
 		score++;

@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class Main extends Canvas implements Runnable {
 
 	Player player;
 	Autopilot autopilot;
+	Ghostpilot ghostpilot;
 
 	public final Color bgColor = new Color(0x202020);
 
@@ -58,6 +60,9 @@ public class Main extends Canvas implements Runnable {
 	}
 
 	State gameState = State.TITLE;
+
+	Recorder rec = new Recorder(1L);
+	Replay replay;
 
 	public Main() {
 	}
@@ -101,7 +106,19 @@ public class Main extends Canvas implements Runnable {
 			sprites.add(autopilot);
 			sprites.add(player);
 
+			ghostpilot = new Ghostpilot(this, 0, jeeves.i.ships[4][0]);
+			ghostpilot.x = 0;
+			ghostpilot.y = 10;
+			sprites.add(ghostpilot);
+
 			this.addKeyListener(keyboard);
+
+			replay = new Replay();
+			try {
+				replay.load("replay_test.crp");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -225,9 +242,28 @@ public class Main extends Canvas implements Runnable {
 		else if (gameState == State.PLAY) {
 			level.tick();
 
+			// replay
+			int n = level.tickCount;
+			ghostpilot.y = replay.get(n);
+
+			// record
+			rec.add((int) player.y);
+			
 			for (Sprite s : sprites) {
 				s.tick();
 			}
+		}
+		
+		
+
+		if (level.mapCount == 50) {
+			Replay rep = rec.getReplay();
+			try {
+				rep.save("rep_" + System.currentTimeMillis() / 1000);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			isRunning = false;
 		}
 
 		tickCount++;
@@ -235,8 +271,8 @@ public class Main extends Canvas implements Runnable {
 
 	private void render() {
 		Graphics g = screen.getGraphics();
-		
-//		g.fillRect(0, 0, WIDTH, HEIGHT);
+
+		// g.fillRect(0, 0, WIDTH, HEIGHT);
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = 0;
 		}
@@ -284,7 +320,7 @@ public class Main extends Canvas implements Runnable {
 		int fh = frame.getHeight();
 		g.setColor(bgColor);
 		g.fillRect(0, 0, fw, fh);
-		
+
 		// draw level
 		g.drawImage(level.img, (int) level.x, (int) level.y, SCREEN_WIDTH,
 				SCREEN_HEIGHT, null);
