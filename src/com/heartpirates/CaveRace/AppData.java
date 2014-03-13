@@ -34,7 +34,7 @@ public class AppData {
 			IOException {
 		synchronized (appData) {
 			Kryo kryo = new Kryo();
-			kryo.register(AppData.class);
+			// kryo.register(AppData.class);
 
 			File file = FileSystems.getDefault().getPath("AppData").toFile();
 			GZIPOutputStream gout = new GZIPOutputStream(new FileOutputStream(
@@ -47,7 +47,7 @@ public class AppData {
 
 	public static AppData load() throws FileNotFoundException, IOException {
 		Kryo kryo = new Kryo();
-		kryo.register(AppData.class);
+		// kryo.register(AppData.class);
 
 		File file = FileSystems.getDefault().getPath("AppData").toFile();
 		GZIPInputStream gin = new GZIPInputStream(new FileInputStream(file));
@@ -70,8 +70,8 @@ public class AppData {
 		return getReplay(0);
 	}
 
-	public void addReplay(Replay rep) {
-		tempReplays.add(0, rep);
+	public void addReplay(Replay replay) {
+		tempReplays.add(0, replay);
 		while (tempReplays.size() > 100)
 			tempReplays.remove(tempReplays.size() - 1);
 	}
@@ -83,7 +83,7 @@ public class AppData {
 				try {
 					synchronized (appData) {
 						Kryo kryo = new Kryo();
-						kryo.register(AppData.class);
+						// kryo.register(AppData.class);
 
 						File file = FileSystems.getDefault().getPath(string)
 								.toFile();

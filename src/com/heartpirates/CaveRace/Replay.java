@@ -1,15 +1,14 @@
 package com.heartpirates.CaveRace;
 
-
 public class Replay {
 
-	int ship = 0;
-	int world = 0;
-	int id;
-	String name;
-	long seed;
-	int length;
-	byte[] bytes;
+	public int ship = 0;
+	public int world = 0;
+	public int id;
+	public String name;
+	public long seed;
+	public int length;
+	public byte[] bytes;
 
 	public int get(int n) {
 		if (n >= length)

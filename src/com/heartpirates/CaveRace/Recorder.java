@@ -35,13 +35,13 @@ public class Recorder {
 
 	public Replay getReplay() {
 		Replay replay = new Replay();
-		
+
 		replay.name = name;
 		replay.id = id;
 		replay.seed = this.seed;
 		replay.length = getLength();
 		replay.bytes = toBytes();
-		
+
 		return replay;
 	}
 }
