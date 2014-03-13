@@ -1,5 +1,6 @@
 package com.heartpirates.screens;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 
@@ -21,6 +22,8 @@ public class TitleScreen extends Screen {
 		ticks = 0;
 	}
 	
+	Color txtColor = new Color(0x79ABFF);
+	
 	@Override
 	public void render(Graphics g) {
 		super.render(g);
@@ -32,13 +35,21 @@ public class TitleScreen extends Screen {
 				pos = 0;
 		}
 	}
+	
+	@Override
+	protected void drawbg(Graphics g) {
+		for (int i = 0; i < pixels.length; i++) {
+			pixels[i] = 0;
+		}
+	}
 
 	@Override
 	protected void drawfg(Graphics g) {
 		if (main.keyboard.keys[KeyEvent.VK_0]) {
 			pos = -20;
 		}
-		g.setColor(main.fgColor);
+		
+		g.setColor(txtColor);
 		g.setFont(main.TITLE_FONT);
 		g.drawString("Cave Race", w / 2 - 37 - 17, h / 2 - 14 + pos + 4);
 		g.setFont(main.FONT);

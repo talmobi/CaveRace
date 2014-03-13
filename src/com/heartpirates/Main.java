@@ -12,12 +12,15 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 
+import com.heartpirates.lvls.IntroLevel;
+import com.heartpirates.screens.GameOverScreen;
 import com.heartpirates.screens.MenuScreen;
 import com.heartpirates.screens.Screen;
 import com.heartpirates.screens.TitleScreen;
@@ -43,10 +46,16 @@ public class Main extends Canvas implements Runnable {
 	Jeeves jeeves;
 	public Keyboard keyboard;
 	Map map;
+
+	private Level currentLevel = null;
+
 	Level level;
+	IntroLevel introLevel;
 
 	public Font TITLE_FONT;
 	public Font FONT;
+
+	AppData appData;
 
 	BufferedImage screen = new BufferedImage(WIDTH, HEIGHT,
 			BufferedImage.TYPE_INT_ARGB);
@@ -55,6 +64,8 @@ public class Main extends Canvas implements Runnable {
 
 	Screen titleScreen = new TitleScreen(this, WIDTH, HEIGHT);
 	Screen menuScreen = new MenuScreen(this, WIDTH, HEIGHT);
+	public boolean showGameOver = false;
+	Screen gameOverScreen = new GameOverScreen(this, WIDTH, HEIGHT);
 
 	BufferedImage testImg = null;
 
@@ -70,14 +81,14 @@ public class Main extends Canvas implements Runnable {
 
 	long keyPressTime = System.currentTimeMillis();
 
-	enum State {
-		TITLE, MENU, PLAY, PAUSED
+	public enum State {
+		TITLE, MENU, PLAY, PAUSED, RESTART
 	}
 
 	public static State gameState = State.TITLE;
-	State lastState = gameState;
+	State lastState = null;
 
-	Recorder rec = new Recorder(1L);
+	Recorder rec = new Recorder(1L, 1);
 	Replay replay;
 
 	public Main() {
@@ -93,6 +104,14 @@ public class Main extends Canvas implements Runnable {
 							.getResourceAsStream("font.ttf")).deriveFont(14f);
 		} catch (Exception e) {
 			this.FONT = null;
+			e.printStackTrace();
+		}
+
+		try {
+			appData = AppData.load();
+		} catch (FileNotFoundException e) {
+			appData = new AppData();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -120,6 +139,7 @@ public class Main extends Canvas implements Runnable {
 			jeeves = new Jeeves();
 			keyboard = new Keyboard(jeeves.radio);
 			level = new Level(this, WIDTH, HEIGHT);
+			introLevel = new IntroLevel(this, WIDTH, HEIGHT);
 
 			map = new Map(this, WIDTH, HEIGHT, 1L);
 			map.initMap();
@@ -130,13 +150,12 @@ public class Main extends Canvas implements Runnable {
 			player.y = 10;
 			sprites.add(player);
 
-			autopilot = new Autopilot(this, 0, jeeves.i.ships[3][0]);
+			autopilot = new Autopilot(this, 0, Jeeves.i.ships[3][0]);
 			autopilot.x = 0;
 			autopilot.y = 10;
 			sprites.add(autopilot);
-			sprites.add(player);
 
-			ghostpilot = new Ghostpilot(this, 0, jeeves.i.ships[4][0]);
+			ghostpilot = new Ghostpilot(this, 0, Jeeves.i.ships[4][0]);
 			ghostpilot.x = 0;
 			ghostpilot.y = 10;
 			sprites.add(ghostpilot);
@@ -147,20 +166,16 @@ public class Main extends Canvas implements Runnable {
 				@Override
 				public void windowClosing(WindowEvent e) {
 					new Thread(new Runnable() {
-
 						@Override
 						public void run() {
-							// save the replay
-							Replay rep = rec.getReplay();
 							try {
-								rep.saveKryo("replay_"
-										+ (System.currentTimeMillis() / 1000)
-										+ ".crp");
-							} catch (IOException ioexc) {
-								ioexc.printStackTrace();
+								AppData.save(appData);
+							} catch (FileNotFoundException e1) {
+								e1.printStackTrace();
+							} catch (IOException e1) {
+								e1.printStackTrace();
 							}
 						}
-
 					}).start();
 				}
 			});
@@ -172,6 +187,22 @@ public class Main extends Canvas implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public void saveReplay() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				// save the replay
+				Replay rep = rec.getReplay();
+				try {
+					rep.saveKryo("replay_"
+							+ (System.currentTimeMillis() / 1000) + ".crp");
+				} catch (IOException ioexc) {
+					ioexc.printStackTrace();
+				}
+			}
+		}).start();
 	}
 
 	public int getMapCount() {
@@ -268,40 +299,93 @@ public class Main extends Canvas implements Runnable {
 		if (gameState == State.PAUSED) {
 		}
 
+		else if (gameState == State.RESTART) {
+			int w = level.width;
+			int h = level.height;
+			long s = level.seed;
+			Level newLevel = new Level(this, w, h, s);
+			this.level = newLevel;
+			currentLevel = this.level;
+			gameState = State.PLAY;
+			lastState = State.RESTART;
+
+			if (player.remove) {
+				player.reset();
+				System.out.println("Player reset");
+				sprites.add(player);
+			}
+			return;
+		}
+
 		else if (gameState == State.TITLE) {
 			if (lastState != gameState) {
 				titleScreen.onSwitch();
-				jeeves.radio.stopMusic();
+				jeeves.radio.loadAndPlay("mus/Is_Bored.sap");
 			}
 
+			introLevel.tick();
+
 			if (keys[KeyEvent.VK_SPACE] || keys[KeyEvent.VK_ENTER]) {
+				lastState = State.TITLE;
 				gameState = State.MENU;
+				return;
 			}
 		}
 
 		else if (gameState == State.MENU) {
 			if (lastState != gameState) {
 				menuScreen.onSwitch();
+				jeeves.radio.loadAndPlay("mus/Boremloza.sap");
 			}
 			menuScreen.tick();
 		}
 
 		else if (gameState == State.PLAY) {
 			if (lastState != gameState) {
-				jeeves.radio.playMusic();
+				showGameOver = false;
+				Audio.play("EngineStart");
+				jeeves.radio.loadAndPlay("mus/Komar.sap");
 			}
 
 			level.tick();
 
 			// replay
 			int n = level.tickCount;
-			ghostpilot.y = replay.get(n);
+			int gy = replay.get(n);
+			if (gy < 0) {
+				ghostpilot.fadeOut();
+			} else {
+				ghostpilot.y = gy;
+			}
 
 			// record
-			rec.add((int) player.y);
+			if (!player.remove) {
+				rec.add((int) player.y);
+			} else {
+
+				// we died
+				if (player.remove && !showGameOver) {
+					int score = (int) level.score;
+					// check high score and level
+					int key = level.world;
+					if (appData.levelMap.containsKey(key)) {
+						int prevScore = appData.levelMap.get(key);
+						if (score > prevScore) {
+							appData.levelMap.put(key, score);
+							System.out.println("New High Score: " + score);
+						}
+					} else {
+						appData.levelMap.put(key, score);
+						System.out.println("New High Score: " + score);
+					}
+				}
+
+				showGameOver = true;
+			}
 
 			for (Sprite s : sprites) {
-				s.tick();
+				if (!s.remove)
+					s.tick();
 			}
 		}
 
@@ -312,7 +396,6 @@ public class Main extends Canvas implements Runnable {
 	private void render() {
 		Graphics g = screen.getGraphics();
 
-		// g.fillRect(0, 0, WIDTH, HEIGHT);
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = 0;
 		}
@@ -324,6 +407,7 @@ public class Main extends Canvas implements Runnable {
 
 		case PAUSED:
 		case PLAY:
+			currentLevel = level;
 
 			// draw sprites
 			for (Sprite s : sprites) {
@@ -338,8 +422,12 @@ public class Main extends Canvas implements Runnable {
 			sprites = list;
 			spritesBuffer.clear();
 
+			if (showGameOver)
+				gameOverScreen.render(g);
+
 			break;
 		case TITLE:
+			currentLevel = introLevel;
 			titleScreen.render(g);
 			break;
 		default:
@@ -362,10 +450,13 @@ public class Main extends Canvas implements Runnable {
 		g.fillRect(0, 0, fw, fh);
 
 		// draw level
-		g.drawImage(level.img, (int) level.x, (int) level.y, SCREEN_WIDTH,
-				SCREEN_HEIGHT, null);
-		g.drawImage(level.nextImg, (int) (level.x + SCREEN_WIDTH),
-				(int) level.y, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+		if (currentLevel != null) {
+			g.drawImage(currentLevel.img, (int) currentLevel.x,
+					(int) currentLevel.y, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+			g.drawImage(currentLevel.nextImg,
+					(int) (currentLevel.x + SCREEN_WIDTH),
+					(int) currentLevel.y, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+		}
 
 		// draw game screen
 		g.drawImage(screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);

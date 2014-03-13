@@ -6,10 +6,14 @@ import java.util.List;
 public class Recorder {
 
 	final long seed;
+	final int world;
+	String name = "Anon";
+	int id = 0;
 	List<Byte> list = new LinkedList<Byte>();
 
-	public Recorder(long seed) {
+	public Recorder(long seed, int world) {
 		this.seed = seed;
+		this.world = world;
 	}
 
 	public void add(int i) {
@@ -31,6 +35,8 @@ public class Recorder {
 	public Replay getReplay() {
 		Replay replay = new Replay();
 		
+		replay.name = name;
+		replay.id = id;
 		replay.seed = this.seed;
 		replay.length = getLength();
 		replay.bytes = toBytes();

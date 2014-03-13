@@ -20,13 +20,17 @@ public class Replay {
 
 	static final String DIR = "replays";
 
+	int ship = 0;
+	int world = 0;
+	int id;
+	String name;
 	long seed;
 	int length;
 	byte[] bytes;
 
 	public int get(int n) {
 		if (n >= length)
-			return 100;
+			return -1;
 		return bytes[n];
 	}
 

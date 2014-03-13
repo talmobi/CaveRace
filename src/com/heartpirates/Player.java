@@ -53,11 +53,23 @@ public class Player extends Entity {
 			yspeed = 0;
 		}
 	}
-	
+
 	@Override
 	public void render(Graphics g) {
-		super.render(g);
+		if (_ticks > _blink && _fade) {
+			_ticks = 0;
+			_visible = !_visible;
+		}
+
+		if (_visible)
+			super.render(g);
 	}
+
+	int _ticks = 0;
+	int _blink = 6;
+	boolean _visible = true;
+	boolean _fade = false;
+	int _ticksDead = 0;
 
 	@Override
 	public void tick() {
@@ -67,34 +79,71 @@ public class Player extends Entity {
 		if (main.level.isBlocked((int) (x + 2), (int) (y + 5))) {
 			collide();
 		}
-		
+
 		gravity = 0;
+
+		_ticks++;
+		if (_fade)
+			_ticksDead++;
+
+		if (_ticksDead > 6 * 20 && !remove) {
+			this.remove = true;
+			onRemove();
+		}
 	}
-	
+
+	private void onRemove() {
+	}
+
+	public void fadeOut() {
+		this._fade = true;
+		Jeeves.i.radio.loadAndPlay("mus/Falex.sap");
+		Audio.play("Disconnect");
+	}
+
 	@Override
 	public void collide() {
-		Audio.play(3);
+		if (!_fade) {
+			Audio.play("Thunder");
+			fadeOut();
+		}
 	}
 
 	public void updateKeyboard() {
 		Keyboard kb = main.keyboard;
 
+		if (_fade)
+			return;
+
 		if (kb.keys[KeyEvent.VK_Q]) {
-			yspeed -= 0.02;
-			lastPressed = System.currentTimeMillis();
-		}
-		if (kb.keys[KeyEvent.VK_W]) {
 			yspeed -= 0.04;
 			lastPressed = System.currentTimeMillis();
 		}
-		if (kb.keys[KeyEvent.VK_A]) {
-			yspeed += 0.02;
+		if (kb.keys[KeyEvent.VK_W]) {
+			yspeed -= 0.08;
 			lastPressed = System.currentTimeMillis();
 		}
-		if (kb.keys[KeyEvent.VK_S]) {
+		if (kb.keys[KeyEvent.VK_A]) {
 			yspeed += 0.04;
 			lastPressed = System.currentTimeMillis();
 		}
+		if (kb.keys[KeyEvent.VK_S]) {
+			yspeed += 0.08;
+			lastPressed = System.currentTimeMillis();
+		}
+	}
+
+	public void reset() {
+		// Player copy = new Player(main);
+		// this.x = copy.x;
+		// this.y = copy.y;
+		x = 0;
+		y = 10;
+		this.remove = false;
+		this._fade = false;
+		this._visible = true;
+		this._ticks = 0;
+		this._ticksDead = 0;
 	}
 
 }

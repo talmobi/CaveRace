@@ -34,6 +34,7 @@ public class MenuScreen extends Screen {
 	int RIGHT = KeyEvent.VK_RIGHT;
 	int UP = KeyEvent.VK_UP;
 	int DOWN = KeyEvent.VK_DOWN;
+	int ENTER = KeyEvent.VK_ENTER;
 
 	private List<Sprite> ships = new LinkedList<Sprite>();
 
@@ -137,6 +138,10 @@ public class MenuScreen extends Screen {
 
 		lastSel = sel;
 	}
+	
+	public void playBlip() {
+		Audio.play("Blip1");
+	}
 
 	private void drawSelection(Graphics g) {
 		int count = 0;
@@ -188,8 +193,14 @@ public class MenuScreen extends Screen {
 		if (!(System.currentTimeMillis() - now > pressDelay))
 			return;
 		boolean[] keys = main.keyboard.keys;
+		if (keys[ENTER]) {
+			now = System.currentTimeMillis();
+			Audio.play("Start2");
+			main.gameState = Main.State.RESTART;
+		}
+		
 		if (keys[RIGHT]) {
-			Audio.play(0);
+			playBlip();
 			now = System.currentTimeMillis();
 			if (sel == Selection.SHIP) {
 				ship--;
@@ -200,7 +211,7 @@ public class MenuScreen extends Screen {
 		}
 
 		if (keys[LEFT]) {
-			Audio.play(0);
+			playBlip();
 			now = System.currentTimeMillis();
 			if (sel == Selection.SHIP) {
 				ship++;
@@ -211,7 +222,7 @@ public class MenuScreen extends Screen {
 		}
 
 		if (keys[UP]) {
-			Audio.play(0);
+			playBlip();
 			now = System.currentTimeMillis();
 			int n = sel.ordinal() - 1;
 			Selection[] vals = Selection.values();
@@ -221,7 +232,7 @@ public class MenuScreen extends Screen {
 		}
 
 		if (keys[DOWN]) {
-			Audio.play(0);
+			playBlip();
 			now = System.currentTimeMillis();
 			int n = sel.ordinal() + 1;
 			Selection[] vals = Selection.values();
@@ -229,6 +240,11 @@ public class MenuScreen extends Screen {
 				n -= vals.length;
 			sel = vals[n];
 		}
+	}
+	
+	@Override
+	public void onSwitch() {
+		now = System.currentTimeMillis() + 200;
 	}
 
 }

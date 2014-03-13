@@ -8,48 +8,68 @@ import java.util.Random;
 
 public class Level {
 
+	int world = 1;
+	
 	double x = 0;
 	double y = 0;
 
-	int width, height;
+	protected int width;
+	protected int height;
 	int sw; // stretch width
 	boolean[][] blockMap = null;
 
-	double lt = 0.04; // low threshold
-	double ht = 0.09; // high threshold
+	protected double lt = 0.04; // low threshold
+	protected double ht = 0.09; // high threshold
 
-	int tick_lt = 22;
-	int tick_ht = 30;
+	protected int tick_lt = 22;
+	protected int tick_ht = 30;
 
-	int mapCount = 0;
+	protected int mapCount = 0;
 	long score = 0;
 
-	int loop = 0;
-	int state = 0;
+	protected int loop = 0;
+	protected int state = 0;
 
-	int low_limit = 4; // def 2
-	int top_limit = 7; // 4
-	int resurrection_limit = 4; // 3
+	protected int low_limit = 4; // def 2
+	protected int top_limit = 7; // 4
+	protected int resurrection_limit = 4; // 3
 
 	BufferedImage img = null;
 	BufferedImage nextImg = null;
 
 	long startTime = System.currentTimeMillis();
 
-	private final Random random = new Random();
+	protected final Random random = new Random();
 
 	Map map;
 	Map nextMap;
-	
+
 	public int tickCount = 0;
 
 	double speed = 1.6;
-	long seed = 1L;
-	private int pathSize = 5;
+	protected long seed = 1L;
+	protected int pathSize = 5;
 
-	private final Main main;
+	protected final Main main;
 
 	public Level(Main main, int w, int h) {
+		this.main = main;
+		this.random.setSeed(this.seed);
+		this.width = w;
+		this.height = h;
+		map = newMap();
+		nextMap = newMap();
+		img = map.getImage();
+		nextImg = nextMap.getImage();
+		blockMap = new boolean[width][height];
+		updateBlockmap();
+		updateAutopilots();
+
+		initLevel();
+	}
+
+	public Level(Main main, int w, int h, long seed) {
+		this.seed = seed;
 		this.main = main;
 		this.random.setSeed(this.seed);
 		this.width = w;
@@ -99,17 +119,17 @@ public class Level {
 
 		updateBlockmap();
 		updateAutopilots();
-		
+
 	}
 
 	List<Map> mapList = new LinkedList<Map>();
 	List<BufferedImage> mapImgList = new LinkedList<BufferedImage>();
-	int mapCounter = 0;
-	int mapLimit = 10;
+	protected int mapCounter = 0;
+	protected int mapLimit = 6;
 	Thread levelThread = null;
 
 	private void initLevel() {
-		// load 100 maps beforehand
+		// load 10 maps beforehand
 		for (int i = 0; i < mapLimit; i++) {
 			Map map = newMap();
 			BufferedImage mapImg = map.getImage();
@@ -119,7 +139,7 @@ public class Level {
 		}
 
 		levelThread = new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				while (true) {
@@ -128,13 +148,14 @@ public class Level {
 						BufferedImage mapImg = map.getImage();
 						mapList.add(map);
 						mapImgList.add(mapImg);
-						System.out.printf("Added map. [%s/%s]\n", mapList.size(), mapLimit);
+						System.out.printf("Added map. [%s/%s]\n",
+								mapList.size(), mapLimit);
 					}
-					
+
 					try {
 						Thread.sleep(Integer.MAX_VALUE);
 					} catch (InterruptedException ie) {
-//						System.out.println("Thread Interrupted.");
+						// System.out.println("Thread Interrupted.");
 					}
 				}
 			}
@@ -142,7 +163,7 @@ public class Level {
 
 		levelThread.setPriority(Thread.MIN_PRIORITY);
 		levelThread.start();
-		
+
 		nextLevel2();
 		nextLevel2();
 	}
@@ -195,9 +216,9 @@ public class Level {
 		}
 	}
 
-	int newMapCounter = 0;
+	protected int newMapCounter = 0;
 
-	private Map newMap() {
+	protected Map newMap() {
 		int mapCount = newMapCounter++;
 
 		double maxg = 0.80;
@@ -285,7 +306,7 @@ public class Level {
 		return (random.nextDouble() * (ht - lt)) + lt;
 	}
 
-	private int getRandomTick() {
+	protected int getRandomTick() {
 		return (int) ((random.nextDouble() * (tick_ht - tick_lt)) + tick_lt + ((int) (Math
 				.min(loop, 15))));
 	}

@@ -1,63 +1,128 @@
 package com.heartpirates;
 
+import java.util.HashMap;
+
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 
 public class Audio {
-	public static final Clip[] clips = getClips();
+	public static final HashMap<String, Clip> clipMap = getClips();
 
-	private static Clip[] getClips() {
-		Clip clips[] = new Clip[5];
+	private static HashMap<String, Clip> getClips() {
+		HashMap<String, Clip> map = new HashMap<String, Clip>();
+		AudioInputStream ais = null;
+		Clip clip = null;
+
 		try {
-			AudioInputStream ais = null;
-			for (int i = 0; i < 5; i++) {
-				switch (i) {
-				case 0:
-					ais = AudioSystem.getAudioInputStream(Audio.class
-							.getClassLoader().getResource("snd/Blip1.wav"));
-					break;
-				case 1:
-					ais = AudioSystem
-							.getAudioInputStream(Audio.class.getClassLoader()
-									.getResource("snd/Explosion1.wav"));
-					break;
-				case 2:
-					ais = AudioSystem
-							.getAudioInputStream(Audio.class.getClassLoader()
-									.getResource("snd/Explosion2.wav"));
-					break;
-				case 3:
-					ais = AudioSystem.getAudioInputStream(Audio.class
-							.getClassLoader().getResource("snd/Hurt1.wav"));
-					break;
-				case 4:
-					ais = AudioSystem.getAudioInputStream(Audio.class
-							.getClassLoader().getResource("snd/Spawn1.wav"));
-					break;
-				}
 
-				Clip clip = AudioSystem.getClip();
-				clip.open(ais);
-				clips[i] = clip;
-			}
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Blip1.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Blip1", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Explosion1.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Explosion1", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Explosion2.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Explosion2", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Hurt1.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Hurt1", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Spawn1.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Spawn1", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Disconnect.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Disconnect", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/EMP.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("EMP", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/EngineStart.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("EngineStart", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Intro.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Intro", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Thunder.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Thunder", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Waveshot.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Waveshot", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Start.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Start", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Start2.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Start2", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Signal.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Signal", clip);
+
+			ais = AudioSystem.getAudioInputStream(Audio.class.getClassLoader()
+					.getResource("snd/Error.wav"));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			map.put("Error", clip);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return clips;
+		return map;
 	}
 
-	public static void play(int n) {
+	public static void play(String name) {
 		try {
-			if (!clips[n].isActive()) {
-				// FloatControl fc = (FloatControl)
-				// clips[n].getControl(FloatControl.Type.MASTER_GAIN);
-				// fc.setValue(-10f);
-				setVolume(.6f, clips[n]);
-				clips[n].setFramePosition(0);
-				clips[n].start();
+			Clip clip = clipMap.get(name);
+			if (clip == null)
+				return;
+
+			if (!clip.isActive()) {
+				setVolume(.6f, clip);
+				clip.setFramePosition(0);
+				clip.start();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -49,7 +49,7 @@ public class Map {
 		bgRand.setSeed(seed + bgSeed);
 	}
 
-	Map(Main main, int w, int h, long seed, int size) {
+	public Map(Main main, int w, int h, long seed, int size) {
 		this.main = main;
 		this.seed = seed;
 		this.width = w;
@@ -90,8 +90,8 @@ public class Map {
 				double bgd = (d * 0.26);
 				if (bgRand.nextDouble() < 0.15) {
 					bgd *= 2.6;
-					if (bgd < .5)
-						bgd += 0.3;
+					while (bgd < .5)
+						bgd += 0.13;
 					if (bgd > 0.8)
 						bgd = 0.8;
 				}
@@ -230,13 +230,13 @@ public class Map {
 		return false;
 	}
 
-	Map initMap(double distribution) {
+	public Map initMap(double distribution) {
 		this.distribution = distribution;
 		System.out.println("d: " + this.distribution);
 		return initMap();
 	}
 
-	Map initMap(double distribution, int low, int top, int res) {
+	public Map initMap(double distribution, int low, int top, int res) {
 		this.distribution = distribution;
 		this.low_limit = low;
 		this.top_limit = top;
@@ -245,7 +245,7 @@ public class Map {
 	}
 
 	// simulate a step within the map
-	Map tick(int ticks) {
+	public Map tick(int ticks) {
 		if (ticks > 100)
 			ticks = 100;
 

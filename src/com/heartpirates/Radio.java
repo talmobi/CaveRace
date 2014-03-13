@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
@@ -24,8 +23,9 @@ public class Radio implements Runnable {
 
 	private AtomicBoolean playing = new AtomicBoolean(false);
 	private float floatVolume = 0.40f;
+	private float defaultVolume = 0.8f;
 	private final Thread t = new Thread(this);
-	
+
 	@Override
 	public void run() {
 		byte[] bytes = new byte[1024 << 3];
@@ -43,7 +43,7 @@ public class Radio implements Runnable {
 			}
 
 			try {
-				Thread.sleep(5);
+				Thread.sleep(30);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -58,24 +58,30 @@ public class Radio implements Runnable {
 		}
 	}
 
-	void loadMusic(String str) {
+	void loadMusic(String name) {
 		System.out.println("Loading sounds...");
 		byte[] bytes;
 		int length;
 
 		try {
-			URL url = this.getClass().getClassLoader().getResource(str);
+			URL url = this.getClass().getClassLoader().getResource(name);
 			InputStream is = url.openStream();
 			bytes = new byte[65 * 1024];
 			length = readAndClose(is, bytes);
+
+			loadAsapMusic(name, bytes, length);
+
+			setVolume(defaultVolume);
 		} catch (IOException ioex) {
 			System.out.println("Failed to load Music!");
 			return;
 		}
+	}
 
+	void loadAsapMusic(String name, byte[] bytes, int length) {
 		ASAPInfo info;
 		try {
-			this.asap.load(str, bytes, length);
+			this.asap.load(name, bytes, length);
 			info = this.asap.getInfo();
 			this.asap.playSong(song,
 					info.getLoop(song) ? -1 : info.getDuration(song));
@@ -124,37 +130,39 @@ public class Radio implements Runnable {
 		}
 		return index;
 	}
-	
+
 	public void setVolume(float percent) {
-		FloatControl fc = (FloatControl) this.line.getControl(FloatControl.Type.MASTER_GAIN);
-		
+		FloatControl fc = (FloatControl) this.line
+				.getControl(FloatControl.Type.MASTER_GAIN);
+
 		float delta = fc.getMaximum() - fc.getMinimum();
 		float f = (float) (fc.getMaximum() - delta * (1 - percent));
-		
-		if (f <  fc.getMinimum())
+
+		if (f < fc.getMinimum())
 			f = fc.getMinimum();
 		if (f > fc.getMaximum())
 			f = fc.getMaximum();
-		
+
 		floatVolume = f;
 		fc.setValue(f);
 		System.out.println("Volume: " + floatVolume);
 	}
 
 	public void setVolume(int i) {
-		FloatControl fc = (FloatControl) this.line.getControl(FloatControl.Type.MASTER_GAIN);
+		FloatControl fc = (FloatControl) this.line
+				.getControl(FloatControl.Type.MASTER_GAIN);
 		System.out.println("Volume: " + floatVolume);
-		
+
 		float pc = fc.getPrecision();
-		
+
 		float f = floatVolume;
 
 		if (i < 0)
 			f -= pc;
 		if (i > 0)
 			f += pc;
-		
-		if (f <  fc.getMinimum())
+
+		if (f < fc.getMinimum())
 			f = fc.getMinimum();
 		if (f > fc.getMaximum())
 			f = fc.getMaximum();
@@ -165,5 +173,15 @@ public class Radio implements Runnable {
 
 	public boolean isPlaying() {
 		return this.line.isActive();
+	}
+
+	public void loadAndPlay(String name) {
+		try {
+			stopMusic();
+			loadMusic(name);
+			playMusic();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

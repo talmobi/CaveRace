@@ -2,7 +2,9 @@ package com.heartpirates.screens;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
+import com.heartpirates.Audio;
 import com.heartpirates.Main;
 
 public class Screen {
@@ -11,25 +13,28 @@ public class Screen {
 
 	int w, h;
 	final Main main;
+	protected int[] pixels;
 
 	public Screen(Main main, int w, int h) {
 		this.main = main;
 		this.w = w;
 		this.h = h;
 		this.img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		this.pixels = ((DataBufferInt) img.getRaster().getDataBuffer())
+				.getData();
 	}
-	
+
 	public void onSwitch() {
+		Audio.play("Intro");
 	}
 
 	public void tick() {
 	}
-	
+
 	public void render(Graphics g) {
 		// background
 		g.setColor(main.bgColor);
-		g.fillRect(0, 0, w, h);
-		drawbg();
+		drawbg(g);
 
 		// draw text
 		g.setColor(main.fgColor);
@@ -40,6 +45,7 @@ public class Screen {
 	protected void drawfg(Graphics g) {
 	}
 
-	protected void drawbg() {
+	protected void drawbg(Graphics g) {
+		g.fillRect(0, 0, w, h);
 	}
 }
