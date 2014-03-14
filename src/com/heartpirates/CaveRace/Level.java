@@ -46,7 +46,10 @@ public class Level {
 
 	public int tickCount = 0;
 
-	double speed = 1.6;
+	double maxSpeed = 3.0;
+	double startSpeed = 1.6;
+	double speed = startSpeed;
+	
 	protected long seed = 1L;
 	protected int pathSize = 5;
 
@@ -101,10 +104,10 @@ public class Level {
 		if (x < -(Main.SCREEN_WIDTH)) {
 			// System.out.println("click");
 			mapCount++;
-			if (speed < 3)
+			if (speed < maxSpeed)
 				speed += 0.2;
 			else
-				speed = 3;
+				speed = maxSpeed;
 			x = 0;
 			nextLevel2();
 			double map_value = (double) (5.0 / pathSize)
@@ -119,7 +122,10 @@ public class Level {
 
 		updateBlockmap();
 		updateAutopilots();
-
+	}
+	
+	public int relativeX(double x) {
+		return (int) (x * (((speed+startSpeed) / (startSpeed+maxSpeed)))) - 1;
 	}
 
 	List<Map> mapList = new LinkedList<Map>();

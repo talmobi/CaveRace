@@ -116,6 +116,8 @@ public class Main extends Canvas implements Runnable {
 		}
 	}
 
+	public int relGhostX = 20;
+
 	public void init() {
 		if (frame == null) {
 			this.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -156,7 +158,7 @@ public class Main extends Canvas implements Runnable {
 			sprites.add(autopilot);
 
 			ghostpilot = new Ghostpilot(this, 0, Jeeves.i.ships[4][0]);
-			ghostpilot.x = 30;
+			ghostpilot.x = 0;
 			ghostpilot.y = 10;
 			sprites.add(ghostpilot);
 
@@ -331,63 +333,40 @@ public class Main extends Canvas implements Runnable {
 		else if (gameState == State.PLAY) {
 			if (lastState != gameState) {
 				showGameOver = false;
+				replay = appData.getHighScoreReplay(1);
 				Audio.play("EngineStart");
 				jeeves.radio.loadAndPlay("mus/Komar.sap");
 			}
 
 			level.tick();
+			player.record();
 
 			// replay
 			int n = level.tickCount;
 			if (replay != null) {
-				int gy = replay.get((int) (n + ghostpilot.x));
+				int gy = replay.get((int) (n + relGhostX));
 				if (gy < 0) {
 					ghostpilot.fadeOut();
 				} else {
 					ghostpilot.y = gy;
 				}
+				ghostpilot.x = level.relativeX(relGhostX);
 			} else {
 				if (ghostpilot != null) {
 					ghostpilot.remove = true;
 				}
 			}
 
-			// record
-			if (!player.remove) {
-				synchronized (rec) {
-					rec.add((int) player.y);
-				}
-			} else {
-
-				// we died
-				if (player.remove && !showGameOver) {
-					// save replay to temp
-					new Thread(new Runnable() {
-						@Override
-						public void run() {
-							synchronized (rec) {
-								appData.addReplay(rec.getReplay());
-							}
-							saveAppData();
-						}
-					}).start();
-
-					int score = (int) level.score;
-					// check high score and level
-					int key = level.world;
-					if (appData.levelMap.containsKey(key)) {
-						int prevScore = appData.levelMap.get(key);
-						if (score > prevScore) {
-							appData.levelMap.put(key, score);
-							System.out.println("New High Score: " + score);
-						}
-					} else {
-						appData.levelMap.put(key, score);
-						System.out.println("New High Score: " + score);
-					}
-				}
-
+			if (player.remove && !showGameOver) {
 				showGameOver = true;
+				// auto save replay
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						appData.addReplay(player.rec.getReplay());
+						saveAppData();
+					}
+				}).start();
 			}
 
 			for (Sprite s : sprites) {

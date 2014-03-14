@@ -11,7 +11,7 @@ public class Replay {
 	public byte[] bytes;
 
 	public int get(int n) {
-		if (n >= length)
+		if (n >= bytes.length)
 			return -1;
 		return bytes[n];
 	}

@@ -7,7 +7,6 @@ public class Ghostpilot extends Autopilot {
 
 	public Ghostpilot(Main main, int xoff, BufferedImage bimg) {
 		super(main, xoff, bimg);
-		this.x = 30;
 	}
 
 	int ticks = 0;

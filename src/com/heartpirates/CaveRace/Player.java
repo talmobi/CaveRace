@@ -17,9 +17,12 @@ public class Player extends Entity {
 	long lastPressed = System.currentTimeMillis();
 	long gravityDelay = 800;
 
+	Recorder rec;
+
 	public Player(Main main, BufferedImage bimg) {
 		super(bimg);
 		this.main = main;
+		rec = new Recorder(main.level.seed, main.level.world);
 	}
 
 	public Player(Main main) {
@@ -92,6 +95,13 @@ public class Player extends Entity {
 		}
 	}
 
+	public void record() {
+		// record
+		if (!remove) {
+			rec.add((int) y);
+		}
+	}
+
 	private void onRemove() {
 	}
 
@@ -144,6 +154,7 @@ public class Player extends Entity {
 		this._visible = true;
 		this._ticks = 0;
 		this._ticksDead = 0;
+		this.rec = new Recorder(main.level.seed, main.level.world);
 	}
 
 }
