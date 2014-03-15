@@ -1,14 +1,14 @@
 package com.heartpirates.CaveRace.lvls;
 
 import com.heartpirates.CaveRace.Level;
-import com.heartpirates.CaveRace.Main;
+import com.heartpirates.CaveRace.CaveRace;
 import com.heartpirates.CaveRace.Map;
 
 public class IntroLevel extends Level {
 
 	int world = 2;
 
-	public IntroLevel(Main main, int w, int h) {
+	public IntroLevel(CaveRace main, int w, int h) {
 		super(main, w, h);
 		this.seed = 666L;
 		this.mapCount = 100000;

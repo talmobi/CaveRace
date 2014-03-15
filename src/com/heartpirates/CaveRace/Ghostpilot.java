@@ -5,12 +5,12 @@ import java.awt.image.BufferedImage;
 
 public class Ghostpilot extends Autopilot {
 
-	public Ghostpilot(Main main, int xoff, BufferedImage bimg) {
+	public Ghostpilot(CaveRace main, int xoff, BufferedImage bimg) {
 		super(main, xoff, bimg);
 	}
 
 	int ticks = 0;
-	int blink = 6;
+	int blink = 3;
 	boolean visible = true;
 	boolean fade = false;
 	int ticksDead = 0;
@@ -40,10 +40,21 @@ public class Ghostpilot extends Autopilot {
 
 	public void fadeOut() {
 		if (!this.fade) {
-			Audio.play("Explosion2");
+			this.visible = false;
+			ticks = 0;
 			Audio.play("Signal");
 			this.fade = true;
 		}
+	}
+
+	public void reset() {
+		x = 20;
+		y = 10;
+		this.remove = false;
+		this.fade = false;
+		this.visible = true;
+		this.ticks = 0;
+		this.ticksDead = 0;
 	}
 
 }

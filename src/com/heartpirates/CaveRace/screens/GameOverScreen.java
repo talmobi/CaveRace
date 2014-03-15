@@ -4,11 +4,11 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 
 import com.heartpirates.CaveRace.Audio;
-import com.heartpirates.CaveRace.Main;
+import com.heartpirates.CaveRace.CaveRace;
 
 public class GameOverScreen extends TitleScreen {
 
-	public GameOverScreen(Main main, int w, int h) {
+	public GameOverScreen(CaveRace main, int w, int h) {
 		super(main, w, h);
 	}
 
@@ -27,9 +27,9 @@ public class GameOverScreen extends TitleScreen {
 			updateKeyboard();
 
 		g.setColor(txtColor);
-		g.setFont(main.TITLE_FONT);
+		g.setFont(game.TITLE_FONT);
 		g.drawString("Game Over", w / 2 - 37 - 17, h / 2 - 14 + pos + 4);
-		g.setFont(main.FONT);
+		g.setFont(game.FONT);
 
 		for (int i = 0; i < sel.values().length; i++) {
 			if (i == sel.ordinal()) {
@@ -42,24 +42,24 @@ public class GameOverScreen extends TitleScreen {
 	}
 
 	private void updateKeyboard() {
-		if (main.keyboard.keys[KeyEvent.VK_0]) {
+		if (game.keyboard.keys[KeyEvent.VK_0]) {
 			now = System.currentTimeMillis();
 			pos = -20;
 		}
-		if (main.keyboard.keys[KeyEvent.VK_ENTER]) {
+		if (game.keyboard.keys[KeyEvent.VK_ENTER]) {
 			now = System.currentTimeMillis();
 			switch (sel) {
 			case MENU:
-				Main.gameState = Main.State.MENU;
+				CaveRace.gameState = CaveRace.State.MENU;
 				Audio.play("Blip1");
 				break;
 			case RESTART:
-				Main.gameState = Main.State.RESTART;
+				CaveRace.gameState = CaveRace.State.RESTART;
 				Audio.play("Start2");
 				break;
 			}
 		}
-		if (main.keyboard.keys[KeyEvent.VK_DOWN]) {
+		if (game.keyboard.keys[KeyEvent.VK_DOWN]) {
 			now = System.currentTimeMillis();
 			Audio.play("Blip1");
 			Sel[] vals = sel.values();
@@ -68,7 +68,7 @@ public class GameOverScreen extends TitleScreen {
 				n -= vals.length;
 			sel = vals[n];
 		}
-		if (main.keyboard.keys[KeyEvent.VK_UP]) {
+		if (game.keyboard.keys[KeyEvent.VK_UP]) {
 			Audio.play("Blip1");
 			now = System.currentTimeMillis();
 			Sel[] vals = sel.values();

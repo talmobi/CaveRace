@@ -61,7 +61,7 @@ public class AppData {
 	}
 
 	public Replay getReplay(int index) {
-		if (tempReplays.isEmpty())
+		if (tempReplays.isEmpty() || index >= tempReplays.size())
 			return null;
 		return tempReplays.get(index);
 	}

@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 
 public class Player extends Entity {
 
-	private final Main main;
+	private final CaveRace main;
 
 	double friction = 0.85;
 	double gravity = 0.0005;
@@ -19,13 +19,13 @@ public class Player extends Entity {
 
 	Recorder rec;
 
-	public Player(Main main, BufferedImage bimg) {
+	public Player(CaveRace main, BufferedImage bimg) {
 		super(bimg);
 		this.main = main;
 		rec = new Recorder(main.level.seed, main.level.world);
 	}
 
-	public Player(Main main) {
+	public Player(CaveRace main) {
 		this(main, new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB));
 	}
 
@@ -97,7 +97,7 @@ public class Player extends Entity {
 
 	public void record() {
 		// record
-		if (!remove) {
+		if (!remove && !_fade) {
 			rec.add((int) y);
 		}
 	}
@@ -109,11 +109,13 @@ public class Player extends Entity {
 		this._fade = true;
 		Jeeves.i.radio.loadAndPlay("mus/Falex.sap");
 		Audio.play("Disconnect");
+		rec.add(-1);
 	}
 
 	@Override
 	public void collide() {
 		if (!_fade) {
+			this._visible = false;
 			Audio.play("Thunder");
 			fadeOut();
 		}

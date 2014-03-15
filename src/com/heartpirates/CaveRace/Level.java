@@ -46,16 +46,14 @@ public class Level {
 
 	public int tickCount = 0;
 
-	double maxSpeed = 3.0;
-	double startSpeed = 1.6;
-	double speed = startSpeed;
+	double speed = 3.0;
 	
 	protected long seed = 1L;
 	protected int pathSize = 5;
 
-	protected final Main main;
+	protected final CaveRace main;
 
-	public Level(Main main, int w, int h) {
+	public Level(CaveRace main, int w, int h) {
 		this.main = main;
 		this.random.setSeed(this.seed);
 		this.width = w;
@@ -71,7 +69,7 @@ public class Level {
 		initLevel();
 	}
 
-	public Level(Main main, int w, int h, long seed) {
+	public Level(CaveRace main, int w, int h, long seed) {
 		this.seed = seed;
 		this.main = main;
 		this.random.setSeed(this.seed);
@@ -101,17 +99,11 @@ public class Level {
 		x -= speed;
 		score++;
 
-		if (x < -(Main.SCREEN_WIDTH)) {
-			// System.out.println("click");
+		if (x < -(CaveRace.SCREEN_WIDTH)) {
 			mapCount++;
-			if (speed < maxSpeed)
-				speed += 0.2;
-			else
-				speed = maxSpeed;
 			x = 0;
 			nextLevel2();
-			double map_value = (double) (5.0 / pathSize)
-					* (1.0 + (Math.sqrt(mapCount)));
+			double map_value = mapCount * 100;
 			score += (int) map_value;
 			calculatePathSize();
 
@@ -124,10 +116,6 @@ public class Level {
 		updateAutopilots();
 	}
 	
-	public int relativeX(double x) {
-		return (int) (x * (((speed+startSpeed) / (startSpeed+maxSpeed)))) - 1;
-	}
-
 	List<Map> mapList = new LinkedList<Map>();
 	List<BufferedImage> mapImgList = new LinkedList<BufferedImage>();
 	protected int mapCounter = 0;

@@ -6,11 +6,11 @@ public class Autopilot extends Entity {
 
 	int targetY;
 
-	private final Main main;
+	private final CaveRace main;
 	public int xoff = 0;
 	public int yoff = 5;
 
-	public Autopilot(Main main, int xoff, BufferedImage bimg) {
+	public Autopilot(CaveRace main, int xoff, BufferedImage bimg) {
 		super(bimg);
 		this.xoff = xoff;
 		this.main = main;

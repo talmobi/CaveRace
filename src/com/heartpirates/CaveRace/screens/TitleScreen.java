@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 
-import com.heartpirates.CaveRace.Main;
+import com.heartpirates.CaveRace.CaveRace;
 
 public class TitleScreen extends Screen {
 
@@ -12,7 +12,7 @@ public class TitleScreen extends Screen {
 	int tickl = 2;
 	int pos = -20;
 
-	public TitleScreen(Main main, int w, int h) {
+	public TitleScreen(CaveRace main, int w, int h) {
 		super(main, w, h);
 	}
 
@@ -45,14 +45,14 @@ public class TitleScreen extends Screen {
 
 	@Override
 	protected void drawfg(Graphics g) {
-		if (main.keyboard.keys[KeyEvent.VK_0]) {
+		if (game.keyboard.keys[KeyEvent.VK_0]) {
 			pos = -20;
 		}
 
 		g.setColor(txtColor);
-		g.setFont(main.TITLE_FONT);
+		g.setFont(game.TITLE_FONT);
 		g.drawString("Cave Race", w / 2 - 37 - 17, h / 2 - 14 + pos + 4);
-		g.setFont(main.FONT);
+		g.setFont(game.FONT);
 		g.drawString("Press Start", w / 2 - 38, h / 2 + 10 - (int) (pos * 3));
 	}
 

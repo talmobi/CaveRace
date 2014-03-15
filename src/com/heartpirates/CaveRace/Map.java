@@ -30,9 +30,9 @@ public class Map {
 	private long seed;
 	private long bgSeed = 512;
 
-	private final Main main;
+	private final CaveRace main;
 
-	Map(Main main, int w, int h, long seed) {
+	Map(CaveRace main, int w, int h, long seed) {
 		this.main = main;
 		this.seed = seed;
 		this.width = w;
@@ -49,7 +49,7 @@ public class Map {
 		bgRand.setSeed(seed + bgSeed);
 	}
 
-	public Map(Main main, int w, int h, long seed, int size) {
+	public Map(CaveRace main, int w, int h, long seed, int size) {
 		this.main = main;
 		this.seed = seed;
 		this.width = w;

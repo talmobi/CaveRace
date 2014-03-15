@@ -25,7 +25,7 @@ import com.heartpirates.CaveRace.screens.MenuScreen;
 import com.heartpirates.CaveRace.screens.Screen;
 import com.heartpirates.CaveRace.screens.TitleScreen;
 
-public class Main extends Canvas implements Runnable {
+public class CaveRace extends Canvas implements Runnable {
 
 	public static final int WIDTH = 120;
 	public static final int HEIGHT = (WIDTH * 9) / 16;
@@ -91,7 +91,7 @@ public class Main extends Canvas implements Runnable {
 	Recorder rec = new Recorder(1L, 1);
 	Replay replay;
 
-	public Main() {
+	public CaveRace() {
 		try {
 			this.TITLE_FONT = Font.createFont(
 					Font.TRUETYPE_FONT,
@@ -115,8 +115,6 @@ public class Main extends Canvas implements Runnable {
 			e.printStackTrace();
 		}
 	}
-
-	public int relGhostX = 20;
 
 	public void init() {
 		if (frame == null) {
@@ -158,7 +156,7 @@ public class Main extends Canvas implements Runnable {
 			sprites.add(autopilot);
 
 			ghostpilot = new Ghostpilot(this, 0, Jeeves.i.ships[4][0]);
-			ghostpilot.x = 0;
+			ghostpilot.x = 15;
 			ghostpilot.y = 10;
 			sprites.add(ghostpilot);
 
@@ -301,8 +299,12 @@ public class Main extends Canvas implements Runnable {
 
 			if (player.remove) {
 				player.reset();
-				System.out.println("Player reset");
 				sprites.add(player);
+			}
+			if (ghostpilot.remove) {
+				ghostpilot.reset();
+				System.out.println("Ghostpilot reset");
+				sprites.add(ghostpilot);
 			}
 			return;
 		}
@@ -344,13 +346,12 @@ public class Main extends Canvas implements Runnable {
 			// replay
 			int n = level.tickCount;
 			if (replay != null) {
-				int gy = replay.get((int) (n + relGhostX));
+				int gy = replay.get(n + (int) ghostpilot.x);
 				if (gy < 0) {
 					ghostpilot.fadeOut();
 				} else {
 					ghostpilot.y = gy;
 				}
-				ghostpilot.x = level.relativeX(relGhostX);
 			} else {
 				if (ghostpilot != null) {
 					ghostpilot.remove = true;
@@ -359,14 +360,7 @@ public class Main extends Canvas implements Runnable {
 
 			if (player.remove && !showGameOver) {
 				showGameOver = true;
-				// auto save replay
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						appData.addReplay(player.rec.getReplay());
-						saveAppData();
-					}
-				}).start();
+				autoSaveReplay();
 			}
 
 			for (Sprite s : sprites) {
@@ -377,6 +371,16 @@ public class Main extends Canvas implements Runnable {
 
 		lastState = gameState;
 		tickCount++;
+	}
+
+	private void autoSaveReplay() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				appData.addReplay(player.rec.getReplay());
+				saveAppData();
+			}
+		}).start();
 	}
 
 	private void render() {
@@ -460,7 +464,7 @@ public class Main extends Canvas implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		Main game = new Main();
+		CaveRace game = new CaveRace();
 		game.init();
 
 		try {
@@ -482,5 +486,9 @@ public class Main extends Canvas implements Runnable {
 		if (level.map == null)
 			return 5;
 		return level.map.getPathSize();
+	}
+
+	public AppData getAppData() {
+		return this.appData;
 	}
 }

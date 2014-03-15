@@ -1,20 +1,25 @@
 package com.heartpirates.CaveRace.screens;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.heartpirates.CaveRace.AppData;
 import com.heartpirates.CaveRace.Audio;
+import com.heartpirates.CaveRace.CaveRace;
 import com.heartpirates.CaveRace.Jeeves;
-import com.heartpirates.CaveRace.Main;
+import com.heartpirates.CaveRace.Replay;
 import com.heartpirates.CaveRace.Sprite;
 
 public class MenuScreen extends Screen {
 
 	int ship = 0;
 	int maxShips = 6;
+
+	int replaySel = 0;
 
 	enum Selection {
 		START, REPLAYS, SCORE, SHIP
@@ -23,7 +28,7 @@ public class MenuScreen extends Screen {
 	Selection sel = Selection.START;
 	Selection lastSel = sel;
 
-	public MenuScreen(Main main, int w, int h) {
+	public MenuScreen(CaveRace main, int w, int h) {
 		super(main, w, h);
 	}
 
@@ -133,7 +138,25 @@ public class MenuScreen extends Screen {
 					c.r = 11;
 				}
 			}
+		}
 
+		if (sel == Selection.REPLAYS) {
+			AppData ad = game.getAppData();
+			for (int i = 0; i < 10; i++) {
+				Replay r = ad.getReplay(replaySel + i);
+				if (r == null)
+					continue;
+				g.setColor(new Color(0x94B51E));
+				int x = 10;
+				int y = 10 + i * 10;
+				g.drawString(r.name, x, y);
+				int ship = (r.ship + i) % 6;
+				if (ship == 5)
+					x += 0;
+				BufferedImage img = Jeeves.i.ships[ship][0];
+				g.drawImage(img, x - 9, y - 9, img.getWidth(), img.getHeight(),
+						null);
+			}
 		}
 
 		lastSel = sel;
@@ -143,6 +166,7 @@ public class MenuScreen extends Screen {
 		Audio.play("Blip1");
 	}
 
+	@Deprecated
 	private void drawSelection(Graphics g) {
 		int count = 0;
 		for (int i = 0; i < maxShips; i++) {
@@ -192,11 +216,17 @@ public class MenuScreen extends Screen {
 	public void tick() {
 		if (!(System.currentTimeMillis() - now > pressDelay))
 			return;
-		boolean[] keys = main.keyboard.keys;
+		boolean[] keys = game.keyboard.keys;
+
 		if (keys[ENTER]) {
 			now = System.currentTimeMillis();
-			Audio.play("Start2");
-			main.gameState = Main.State.RESTART;
+
+			if (sel == Selection.START) {
+				Audio.play("Start2");
+				CaveRace.gameState = CaveRace.State.RESTART;
+			} else {
+				Audio.play("Error");
+			}
 		}
 
 		if (keys[RIGHT]) {
