@@ -130,7 +130,7 @@ public class CaveRace extends Canvas implements Runnable {
 		}
 	}
 
-	public void init() {
+	public void init() throws IOException {
 		if (frame == null) {
 			this.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 			this.setMinimumSize(this.getSize());
@@ -585,7 +585,13 @@ public class CaveRace extends Canvas implements Runnable {
 		}
 
 		CaveRace game = new CaveRace();
-		game.init();
+		
+		try {
+			game.init();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			System.out.println("Music failed to load.");
+		}
 
 		try {
 			game.start();

@@ -29,6 +29,12 @@ public class Radio implements Runnable {
 	private String nowPlaying = "";
 
 	private final Object lock = new Object();
+	
+	private final MusicData md;
+	
+	public Radio() throws IOException {
+		md = MusicData.load();
+	}
 
 	@Override
 	public void run() {
@@ -72,19 +78,18 @@ public class Radio implements Runnable {
 			byte[] bytes;
 			int length;
 
-			try {
-				URL url = this.getClass().getClassLoader().getResource(name);
-				InputStream is = url.openStream();
-				bytes = new byte[65 * 1024];
-				length = readAndClose(is, bytes);
-
-				loadAsapMusic(name, bytes, length);
-
-				setVolume(defaultVolume);
-			} catch (IOException ioex) {
-				System.out.println("Failed to load Music!");
+			bytes = md.getMusicBytes(name.substring(4));
+			
+			if (bytes == null) {
+				System.out.println("Failed to load music: " + name);
 				return;
 			}
+			
+			length = bytes.length;
+			
+			loadAsapMusic(name, bytes, length);
+
+			setVolume(defaultVolume);
 		}
 	}
 

@@ -18,7 +18,7 @@ public class Jeeves {
 	Radio radio;
 	public Kryo kryo;
 
-	Jeeves() {
+	Jeeves() throws IOException {
 		if (i == null) {
 			i = this;
 
