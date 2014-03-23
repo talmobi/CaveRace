@@ -3,6 +3,7 @@ package com.heartpirates.CaveRace;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,36 +19,59 @@ import com.esotericsoftware.kryo.io.Output;
 public class MusicData {
 
 	public static final String FILENAME = "Music.crdata";
-	HashMap<String, Sound> map = new HashMap<String, Sound>();
+	public HashMap<String, Sound> map;
 
 	public static MusicData load() throws IOException {
 		File file = new File(FILENAME);
 		MusicData md = null;
 
-		if (file.exists() && file.isFile()) {
+		if (file.exists() && file.isFile() && false) {
 			try {
-				GZIPInputStream gos = new GZIPInputStream(new FileInputStream(
+				GZIPInputStream gin = new GZIPInputStream(new FileInputStream(
 						file));
-				Input input = new Input(gos);
+				Input input = new Input(gin);
 				Kryo kryo = new Kryo();
 				md = kryo.readObject(input, MusicData.class);
 				input.close();
+				System.out.println("---MUSIC LOADED FROM FILE---");
 			} catch (Exception e) {
+				e.printStackTrace();
+				md = null;
+			}
+		} else {
+			// try reading from within jar
+			try {
+				InputStream is = MusicData.class.getClassLoader()
+						.getResourceAsStream(FILENAME);
+				GZIPInputStream gin = new GZIPInputStream(is);
+				Input input = new Input(gin);
+				Kryo kryo = new Kryo();
+				md = kryo.readObject(input, MusicData.class);
+				input.close();
+				System.out.println("---MUSIC LOADED FROM URL---");
+			} catch (Exception e) {
+				e.printStackTrace();
 				md = null;
 			}
 		}
 
 		if (md == null) {
+			System.out.println("<<< MUSIC RECREATED >>>");
 			md = new MusicData();
 			md.init(); // load all music files
 
-			// write it to file
-			GZIPOutputStream gos = new GZIPOutputStream(new FileOutputStream(
-					file));
-			Output output = new Output(gos);
-			Kryo kryo = new Kryo();
-			kryo.writeObject(output, md);
-			output.clear();
+			// try {
+			// Thread.sleep(100);
+			// } catch (InterruptedException e) {
+			// e.printStackTrace();
+			// }
+			//
+			// // write it to file
+			// FileOutputStream fos = new FileOutputStream(file);
+			// Output output = new Output(fos);
+			// Kryo kryo = new Kryo();
+			// kryo.writeObject(output, md);
+			// output.close();
 		}
 
 		return md;
@@ -63,6 +87,8 @@ public class MusicData {
 	}
 
 	private void init() throws IOException {
+		map = new HashMap<String, Sound>();
+
 		// load all music files form the directory
 		String path = "res/mus";
 		File folder = new File(path);
@@ -81,7 +107,7 @@ public class MusicData {
 					.getResource("mus/" + file);
 			InputStream is = url.openStream();
 			int b;
-			while ((b = is.read()) >= 0) {
+			while ((b = is.read()) != -1) {
 				baos.write(b);
 			}
 			baos.flush();
@@ -94,6 +120,25 @@ public class MusicData {
 			is.close();
 		}
 		baos.close();
+
+		// self save
+		save();
+	}
+
+	private void save() throws IOException {
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		// write it to file
+		FileOutputStream fos = new FileOutputStream(new File(FILENAME));
+		GZIPOutputStream gos = new GZIPOutputStream(fos);
+		Output output = new Output(gos);
+		Kryo kryo = new Kryo();
+		kryo.writeObject(output, this);
+		output.close();
 	}
 
 	public byte[] getMusicBytes(String name) {

@@ -225,6 +225,12 @@ public class Client {
 			OutputStream os = socket.getOutputStream();
 			os.write(postRequest.getBytes("UTF-8"));
 			os.flush();
+			
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
 			// receive message
 			int b;

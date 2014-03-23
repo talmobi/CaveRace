@@ -46,8 +46,8 @@ public class Audio {
 	public static Audio loadAudio() {
 		File file = FileSystems.getDefault().getPath(Audio.NAME).toFile();
 
+		Kryo kryo = new Kryo();
 		if (file.exists() && file.isFile()) {
-			Kryo kryo = new Kryo();
 
 			try {
 				GZIPInputStream gin = new GZIPInputStream(new FileInputStream(
@@ -60,6 +60,21 @@ public class Audio {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		} else {
+			// try loading from within jar
+			try {
+				InputStream is = Audio.class.getClassLoader()
+						.getResourceAsStream(Audio.NAME);
+				GZIPInputStream gin = new GZIPInputStream(is);
+				Input input = new Input(gin);
+				Audio kryoAudio = kryo.readObject(input, Audio.class);
+				input.close();
+				System.out.println("Loaded from Kryo.");
+				return kryoAudio;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
 		}
 		
 		Audio audio = new Audio(); // load audio from filesystem
