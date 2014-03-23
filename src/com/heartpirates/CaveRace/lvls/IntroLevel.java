@@ -7,9 +7,10 @@ import com.heartpirates.CaveRace.Map;
 public class IntroLevel extends Level {
 
 	int world = 2;
+	boolean flip = false;
 
 	public IntroLevel(CaveRace main, int w, int h) {
-		super(main, w, h);
+		super(main, w, h, 1L);
 		this.seed = 666L;
 		this.mapCount = 100000;
 		this.mapCounter = 100000;

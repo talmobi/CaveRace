@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 
 import com.heartpirates.CaveRace.Audio;
 import com.heartpirates.CaveRace.CaveRace;
+import com.heartpirates.CaveRace.CaveRace.State;
 
 public class GameOverScreen extends TitleScreen {
 
@@ -42,6 +43,9 @@ public class GameOverScreen extends TitleScreen {
 	}
 
 	private void updateKeyboard() {
+		if (!game.showGameOver)
+			return;
+		
 		if (game.keyboard.keys[KeyEvent.VK_0]) {
 			now = System.currentTimeMillis();
 			pos = -20;
@@ -50,11 +54,11 @@ public class GameOverScreen extends TitleScreen {
 			now = System.currentTimeMillis();
 			switch (sel) {
 			case MENU:
-				CaveRace.gameState = CaveRace.State.MENU;
+				game.setGameState(State.MENU);
 				Audio.play("Blip1");
 				break;
 			case RESTART:
-				CaveRace.gameState = CaveRace.State.RESTART;
+				game.setGameState(State.RESTART);
 				Audio.play("Start2");
 				break;
 			}

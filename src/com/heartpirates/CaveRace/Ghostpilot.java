@@ -34,7 +34,7 @@ public class Ghostpilot extends Autopilot {
 			visible = !visible;
 		}
 
-		if (visible)
+		if (visible && !remove)
 			super.render(g);
 	}
 

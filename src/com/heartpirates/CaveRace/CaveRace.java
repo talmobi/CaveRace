@@ -14,14 +14,19 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JFrame;
 
 import com.heartpirates.CaveRace.lvls.IntroLevel;
+import com.heartpirates.CaveRace.net.Network;
 import com.heartpirates.CaveRace.screens.GameOverScreen;
+import com.heartpirates.CaveRace.screens.HighScoreScreen;
 import com.heartpirates.CaveRace.screens.MenuScreen;
+import com.heartpirates.CaveRace.screens.ReplayOverScreen;
+import com.heartpirates.CaveRace.screens.ReplayScreen;
 import com.heartpirates.CaveRace.screens.Screen;
 import com.heartpirates.CaveRace.screens.TitleScreen;
 
@@ -29,6 +34,8 @@ public class CaveRace extends Canvas implements Runnable {
 
 	public static final int WIDTH = 120;
 	public static final int HEIGHT = (WIDTH * 9) / 16;
+
+	public static Network network;
 
 	public static final int SCALE = 3;
 
@@ -49,7 +56,7 @@ public class CaveRace extends Canvas implements Runnable {
 
 	private Level currentLevel = null;
 
-	Level level;
+	public Level level;
 	IntroLevel introLevel;
 
 	public Font TITLE_FONT;
@@ -63,14 +70,17 @@ public class CaveRace extends Canvas implements Runnable {
 			.getData();
 
 	Screen titleScreen = new TitleScreen(this, WIDTH, HEIGHT);
-	Screen menuScreen = new MenuScreen(this, WIDTH, HEIGHT);
+	MenuScreen menuScreen = new MenuScreen(this, WIDTH, HEIGHT);
 	public boolean showGameOver = false;
 	Screen gameOverScreen = new GameOverScreen(this, WIDTH, HEIGHT);
+	Screen replayOverScreen = new ReplayOverScreen(this, WIDTH, HEIGHT);
+	Screen replayScreen = new ReplayScreen(this, WIDTH, HEIGHT);
+	Screen highScoreScreen = new HighScoreScreen(this, WIDTH, HEIGHT);
 
 	BufferedImage testImg = null;
 
-	List<Sprite> sprites = new ArrayList<Sprite>();
-	List<Sprite> spritesBuffer = new ArrayList<Sprite>();
+	// List<Sprite> sprites = new ArrayList<Sprite>();
+	// List<Sprite> spritesBuffer = new ArrayList<Sprite>();
 
 	Player player;
 	Autopilot autopilot;
@@ -82,17 +92,19 @@ public class CaveRace extends Canvas implements Runnable {
 	long keyPressTime = System.currentTimeMillis();
 
 	public enum State {
-		TITLE, MENU, PLAY, PAUSED, RESTART
+		TITLE, MENU, PLAY, PAUSED, RESTART, MENU_REPLAY, PLAY_REPLAY, MENU_HIGHSCORES
 	}
 
-	public static State gameState = State.TITLE;
-	State lastState = null;
+	private State gameState = State.TITLE;
+	private State lastState = null;
 
 	Recorder rec = new Recorder(1L, 1);
-	Replay replay;
+	public Replay replay;
 
 	public CaveRace() {
 		try {
+			CaveRace.network = new Network();
+			
 			this.TITLE_FONT = Font.createFont(
 					Font.TRUETYPE_FONT,
 					this.getClass().getClassLoader()
@@ -111,7 +123,9 @@ public class CaveRace extends Canvas implements Runnable {
 			appData = AppData.load();
 		} catch (FileNotFoundException e) {
 			appData = new AppData();
+			appData.successfullyLoaded = true;
 		} catch (IOException e) {
+			appData.successfullyLoaded = false;
 			e.printStackTrace();
 		}
 	}
@@ -138,7 +152,7 @@ public class CaveRace extends Canvas implements Runnable {
 
 			jeeves = new Jeeves();
 			keyboard = new Keyboard(jeeves.radio);
-			level = new Level(this, WIDTH, HEIGHT);
+			level = new Level(this, WIDTH, HEIGHT, 1L);
 			introLevel = new IntroLevel(this, WIDTH, HEIGHT);
 
 			map = new Map(this, WIDTH, HEIGHT, 1L);
@@ -148,17 +162,14 @@ public class CaveRace extends Canvas implements Runnable {
 			player = new Player(this, Jeeves.i.ships[1][0]);
 			player.x = 0;
 			player.y = 10;
-			sprites.add(player);
 
 			autopilot = new Autopilot(this, 0, Jeeves.i.ships[3][0]);
 			autopilot.x = 0;
 			autopilot.y = 10;
-			sprites.add(autopilot);
 
 			ghostpilot = new Ghostpilot(this, 0, Jeeves.i.ships[4][0]);
 			ghostpilot.x = 15;
 			ghostpilot.y = 10;
-			sprites.add(ghostpilot);
 
 			this.addKeyListener(keyboard);
 
@@ -249,9 +260,9 @@ public class CaveRace extends Canvas implements Runnable {
 
 			if (now - lastSecond > 1000) {
 				String status = "State: " + gameState + ", score: "
-						+ level.score + ", distance: " + level.mapCount
-						+ ", frames: " + frames + ", ticks: " + ticks
-						+ ", map: " + level.mapCount;
+						+ player.rec.list.size() * 100 + ", distance: "
+						+ level.mapCount + ", frames: " + frames + ", ticks: "
+						+ ticks + ", map: " + level.mapCount;
 				print(status);
 				frame.setTitle(status);
 				frames = 0;
@@ -280,6 +291,8 @@ public class CaveRace extends Canvas implements Runnable {
 		keyPressTime = now;
 	}
 
+	private State newState = gameState;
+
 	private void tick() {
 		updateKeyboard();
 		boolean[] keys = keyboard.keys;
@@ -290,58 +303,112 @@ public class CaveRace extends Canvas implements Runnable {
 		else if (gameState == State.RESTART) {
 			int w = level.width;
 			int h = level.height;
-			long s = level.seed;
-			Level newLevel = new Level(this, w, h, s);
-			this.level = newLevel;
+			this.level = new Level(this, w, h, 1L);
 			currentLevel = this.level;
-			gameState = State.PLAY;
-			lastState = State.RESTART;
 
-			if (player.remove) {
-				player.reset();
-				sprites.add(player);
-			}
-			if (ghostpilot.remove) {
-				ghostpilot.reset();
-				System.out.println("Ghostpilot reset");
-				sprites.add(ghostpilot);
-			}
-			return;
+			setGameState(State.PLAY);
+
+			player.reset();
+			ghostpilot.reset();
 		}
 
 		else if (gameState == State.TITLE) {
 			if (lastState != gameState) {
 				titleScreen.onSwitch();
-				jeeves.radio.loadAndPlay("mus/Is_Bored.sap");
+				jeeves.radio.loadAndPlay("mus/Drunk_Chessboard.sap");
 			}
 
 			introLevel.tick();
 
 			if (keys[KeyEvent.VK_SPACE] || keys[KeyEvent.VK_ENTER]) {
-				lastState = State.TITLE;
-				gameState = State.MENU;
-				return;
+				newState = State.MENU;
 			}
 		}
 
 		else if (gameState == State.MENU) {
 			if (lastState != gameState) {
 				menuScreen.onSwitch();
-				jeeves.radio.loadAndPlay("mus/Boremloza.sap");
+				jeeves.radio.loadAndPlay("mus/Return_of_Atarians.sap");
 			}
 			menuScreen.tick();
 		}
 
+		else if (gameState == State.MENU_REPLAY) {
+			if (lastState != gameState) {
+				replayScreen.onSwitch();
+				jeeves.radio.loadAndPlay("mus/Return_of_Atarians.sap");
+			}
+			replayScreen.tick();
+		}
+
+		else if (gameState == State.MENU_HIGHSCORES) {
+			if (lastState != gameState) {
+				highScoreScreen.onSwitch();
+				jeeves.radio.loadAndPlay("mus/Return_of_Atarians.sap");
+			}
+			highScoreScreen.tick();
+		}
+
+		else if (gameState == State.PLAY_REPLAY) {
+			if (lastState != gameState) {
+				prepareReplay();
+				playRandomSong();
+			}
+
+			level.tick();
+			ghostpilot.tick();
+
+			// replay
+			int n = level.tickCount;
+			if (replay != null) {
+				int gy = replay.get(n + (int) ghostpilot.x);
+				if (gy < 0) {
+					ghostpilot.fadeOut();
+				} else {
+					ghostpilot.y = gy;
+				}
+			} else {
+				if (ghostpilot != null) {
+					ghostpilot.remove = true;
+				}
+			}
+
+			if (ghostpilot.remove && !showGameOver) {
+				showGameOver = true;
+			}
+
+			if (keys[KeyEvent.VK_ESCAPE] || keys[KeyEvent.VK_BACK_SPACE]) {
+				setGameState(State.MENU_REPLAY);
+			}
+		}
+
 		else if (gameState == State.PLAY) {
 			if (lastState != gameState) {
-				showGameOver = false;
-				replay = appData.getHighScoreReplay(1);
+				preparePlay();
+				Replay replay = null;
+				switch (menuScreen.mode) {
+				case PERSONAL:
+					replay = appData.getHighScoreReplay(level.world);
+					break;
+				case WORLDWIDE:
+					replay = appData.getWorldHighScoreReplay(level.world);
+					break;
+				case NONE:
+				default:
+					ghostpilot.visible = false;
+					break;
+				}
+				this.replay = replay;
+				prepareReplay();
+
 				Audio.play("EngineStart");
-				jeeves.radio.loadAndPlay("mus/Komar.sap");
+				playRandomSong();
 			}
 
 			level.tick();
 			player.record();
+			player.tick();
+			ghostpilot.tick();
 
 			// replay
 			int n = level.tickCount;
@@ -362,22 +429,67 @@ public class CaveRace extends Canvas implements Runnable {
 				showGameOver = true;
 				autoSaveReplay();
 			}
-
-			for (Sprite s : sprites) {
-				if (!s.remove)
-					s.tick();
-			}
 		}
 
 		lastState = gameState;
 		tickCount++;
+		gameState = newState;
+	}
+
+	public void prepareReplay() {
+		if (replay == null)
+			return;
+		ghostpilot.reset();
+		ghostpilot.image = Jeeves.i.ships[replay.ship][0];
+		showGameOver = false;
+	}
+
+	public void preparePlay() {
+		showGameOver = false;
+		player.image = Jeeves.i.ships[getShipId()][0];
+	}
+
+	public void setGameState(State state) {
+		this.newState = state;
+	}
+
+	private void playRandomSong() {
+		jeeves.radio.stopMusic();
+
+		int n = (int) (Math.random() * 5);
+		switch (n) {
+		case 0:
+			jeeves.radio.loadAndPlay("mus/X_Ray_2.sap");
+			break;
+		case 1:
+			jeeves.radio.loadAndPlay("mus/Czarna_dziura_w_dupie.sap");
+			break;
+		case 2:
+			jeeves.radio.loadAndPlay("mus/drilldance.tm8");
+			break;
+		case 3:
+			jeeves.radio.loadAndPlay("mus/shakeass.tm8");
+			break;
+		case 4:
+			jeeves.radio.loadAndPlay("mus/zizibum.tm8");
+			break;
+		default:
+			jeeves.radio.loadAndPlay("mus/Komar.sap");
+		}
+	}
+
+	private int getShipId() {
+		return ((MenuScreen) this.menuScreen).ship;
 	}
 
 	private void autoSaveReplay() {
+		final int shipid = this.getShipId();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				appData.addReplay(player.rec.getReplay());
+				Replay replay = player.rec.getReplay();
+				replay.ship = shipid;
+				appData.addReplay(replay);
 				saveAppData();
 			}
 		}).start();
@@ -390,31 +502,36 @@ public class CaveRace extends Canvas implements Runnable {
 			pixels[i] = 0;
 		}
 
+		if (lastState != gameState)
+			return;
+
 		switch (gameState) {
 		case MENU:
 			menuScreen.render(g);
 			break;
 
+		case MENU_REPLAY:
+			replayScreen.render(g);
+			break;
+		case MENU_HIGHSCORES:
+			highScoreScreen.render(g);
+			break;
+
 		case PAUSED:
-		case PLAY:
+		case PLAY_REPLAY:
+			ghostpilot.render(g);
+
+			if (showGameOver)
+				replayOverScreen.render(g);
 			currentLevel = level;
-
-			// draw sprites
-			for (Sprite s : sprites) {
-				if (!s.remove) {
-					s.render(g);
-					spritesBuffer.add(s);
-				}
-			}
-
-			List<Sprite> list = spritesBuffer;
-			spritesBuffer = sprites;
-			sprites = list;
-			spritesBuffer.clear();
+			break;
+		case PLAY:
+			player.render(g);
+			ghostpilot.render(g);
 
 			if (showGameOver)
 				gameOverScreen.render(g);
-
+			currentLevel = level;
 			break;
 		case TITLE:
 			currentLevel = introLevel;
@@ -428,7 +545,7 @@ public class CaveRace extends Canvas implements Runnable {
 	private void swap() {
 		BufferStrategy bs = this.getBufferStrategy();
 		if (bs == null) {
-			this.createBufferStrategy(3);
+			this.createBufferStrategy(2);
 			return;
 		}
 
@@ -464,6 +581,9 @@ public class CaveRace extends Canvas implements Runnable {
 	}
 
 	public static void main(String[] args) {
+		if (args.length > 0) {
+		}
+
 		CaveRace game = new CaveRace();
 		game.init();
 
@@ -490,5 +610,21 @@ public class CaveRace extends Canvas implements Runnable {
 
 	public AppData getAppData() {
 		return this.appData;
+	}
+
+	public void addTopReplays(List<Replay> list) {
+		this.appData.topReplays = list;
+		saveAppData();
+	}
+
+	public static void sort(List<Replay> tempReplays) {
+		Collections.sort(tempReplays, new Comparator<Replay>() {
+			@Override
+			public int compare(Replay r1, Replay r2) {
+				if (r1.length < r2.length)
+					return 1;
+				return -1;
+			}
+		});
 	}
 }

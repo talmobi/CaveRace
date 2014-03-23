@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -18,13 +17,15 @@ import com.esotericsoftware.kryo.io.Output;
 
 public class AppData {
 
+	static boolean successfullyLoaded = false;
+
 	String password;
 	int id;
 
 	// World id, Score / Distance
-	HashMap<Integer, Integer> levelMap = new HashMap<Integer, Integer>();
+	// HashMap<Integer, Integer> levelMap = new HashMap<Integer, Integer>();
 
-	List<Replay> savedReplays = new LinkedList<Replay>();
+	List<Replay> topReplays = new LinkedList<Replay>();
 	List<Replay> tempReplays = new LinkedList<Replay>();
 
 	public AppData() {
@@ -32,9 +33,11 @@ public class AppData {
 
 	public static void save(AppData appData) throws FileNotFoundException,
 			IOException {
+		if (!successfullyLoaded)
+			throw new IOException("Can't save. File loaded unsuccessfully.");
+
 		synchronized (appData) {
 			Kryo kryo = new Kryo();
-			// kryo.register(AppData.class);
 
 			File file = FileSystems.getDefault().getPath("AppData").toFile();
 			GZIPOutputStream gout = new GZIPOutputStream(new FileOutputStream(
@@ -47,21 +50,22 @@ public class AppData {
 
 	public static AppData load() throws FileNotFoundException, IOException {
 		Kryo kryo = new Kryo();
-		// kryo.register(AppData.class);
 
 		File file = FileSystems.getDefault().getPath("AppData").toFile();
 		GZIPInputStream gin = new GZIPInputStream(new FileInputStream(file));
 		Input input = new Input(gin);
 
 		AppData a = kryo.readObject(input, AppData.class);
+		input.close();
 
 		System.out.println("AppData Loaded. replays: " + a.tempReplays.size());
 
+		successfullyLoaded = true;
 		return a;
 	}
 
 	public Replay getReplay(int index) {
-		if (tempReplays.isEmpty() || index >= tempReplays.size())
+		if (tempReplays.isEmpty() || index >= tempReplays.size() || index < 0)
 			return null;
 		return tempReplays.get(index);
 	}
@@ -72,6 +76,9 @@ public class AppData {
 
 	public void addReplay(Replay replay) {
 		tempReplays.add(0, replay);
+
+		// CaveRace.sort(tempReplays);
+
 		while (tempReplays.size() > 100)
 			tempReplays.remove(tempReplays.size() - 1);
 	}
@@ -80,10 +87,15 @@ public class AppData {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
+				if (!successfullyLoaded) {
+					System.out
+							.println("Failed to load AppData - Save prevented.");
+					return;
+				}
+
 				try {
 					synchronized (appData) {
 						Kryo kryo = new Kryo();
-						// kryo.register(AppData.class);
 
 						File file = FileSystems.getDefault().getPath(string)
 								.toFile();
@@ -105,6 +117,28 @@ public class AppData {
 		Replay rep = null;
 		for (int i = 0; i < tempReplays.size(); i++) {
 			Replay tempRep = tempReplays.get(i);
+			int tempScore = tempRep.length;
+			if (tempScore > score) {
+				score = tempScore;
+				rep = tempRep;
+			}
+		}
+
+		return rep;
+	}
+
+	public int getSize() {
+		return this.tempReplays.size();
+	}
+
+	public Replay getWorldHighScoreReplay(int world) {
+		if (topReplays == null || topReplays.isEmpty())
+			return getHighScoreReplay(world);
+
+		int score = 0;
+		Replay rep = null;
+		for (int i = 0; i < topReplays.size(); i++) {
+			Replay tempRep = topReplays.get(i);
 			int tempScore = tempRep.length;
 			if (tempScore > score) {
 				score = tempScore;

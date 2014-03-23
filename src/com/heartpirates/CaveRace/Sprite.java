@@ -5,7 +5,8 @@ import java.awt.image.BufferedImage;
 
 public class Sprite {
 
-	boolean remove = false;
+	protected boolean remove = false;
+	protected boolean visible = true;
 	
 	protected double x = 0;
 	protected double y = 0;

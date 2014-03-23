@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class Level {
 
-	int world = 1;
+	public int world = 1;
 	
 	double x = 0;
 	double y = 0;
@@ -53,21 +53,21 @@ public class Level {
 
 	protected final CaveRace main;
 
-	public Level(CaveRace main, int w, int h) {
-		this.main = main;
-		this.random.setSeed(this.seed);
-		this.width = w;
-		this.height = h;
-		map = newMap();
-		nextMap = newMap();
-		img = map.getImage();
-		nextImg = nextMap.getImage();
-		blockMap = new boolean[width][height];
-		updateBlockmap();
-		updateAutopilots();
-
-		initLevel();
-	}
+//	public Level(CaveRace main, int w, int h) {
+//		this.main = main;
+//		this.random.setSeed(this.seed);
+//		this.width = w;
+//		this.height = h;
+//		map = newMap();
+//		nextMap = newMap();
+//		img = map.getImage();
+//		nextImg = nextMap.getImage();
+//		blockMap = new boolean[width][height];
+//		updateBlockmap();
+//		updateAutopilots();
+//
+//		initLevel();
+//	}
 
 	public Level(CaveRace main, int w, int h, long seed) {
 		this.seed = seed;
@@ -103,9 +103,7 @@ public class Level {
 			mapCount++;
 			x = 0;
 			nextLevel2();
-			double map_value = mapCount * 100;
-			score += (int) map_value;
-			calculatePathSize();
+ 			calculatePathSize();
 
 			// buffer more maps if necessary
 			if (levelThread != null)
@@ -119,7 +117,7 @@ public class Level {
 	List<Map> mapList = new LinkedList<Map>();
 	List<BufferedImage> mapImgList = new LinkedList<BufferedImage>();
 	protected int mapCounter = 0;
-	protected int mapLimit = 6;
+	protected int mapLimit = 10;
 	Thread levelThread = null;
 
 	private void initLevel() {

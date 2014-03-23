@@ -13,7 +13,7 @@ public class Map {
 	int width, height;
 	boolean[][] map;
 	boolean[][] bgMap;
-
+	
 	double distribution = 0.35;
 
 	int low_limit = 4; // def 2
@@ -100,7 +100,8 @@ public class Map {
 		}
 
 		// flip map
-		if (rand.nextDouble() < 0.45) {
+		double fd = rand.nextDouble();
+		if (fd < 0.49) {
 			boolean[][] mm = new boolean[width][height];
 			for (int i = 0; i < width; i++) {
 				for (int j = 0; j < height; j++) {

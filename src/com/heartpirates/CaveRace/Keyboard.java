@@ -25,13 +25,9 @@ public class Keyboard implements KeyListener {
 
 	public void update() {
 		if (keys[KeyEvent.VK_1]) {
-			CaveRace.gameState = CaveRace.State.TITLE;
 		} else if (keys[KeyEvent.VK_2]) {
-			CaveRace.gameState = CaveRace.State.MENU;
 		} else if (keys[KeyEvent.VK_3]) {
-			CaveRace.gameState = CaveRace.State.PLAY;
 		} else if (keys[KeyEvent.VK_4]) {
-			CaveRace.gameState = CaveRace.State.PAUSED;
 		}
 
 		else if (keys[KeyEvent.VK_P]) {

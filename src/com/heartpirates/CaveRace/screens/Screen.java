@@ -41,6 +41,10 @@ public class Screen {
 		g.setFont(game.FONT);
 		drawfg(g);
 	}
+	
+	public void playBlip() {
+		Audio.play("Blip1");
+	}
 
 	protected void drawfg(Graphics g) {
 	}

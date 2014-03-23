@@ -1,32 +1,36 @@
 package com.heartpirates.CaveRace.screens;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.heartpirates.CaveRace.AppData;
 import com.heartpirates.CaveRace.Audio;
 import com.heartpirates.CaveRace.CaveRace;
+import com.heartpirates.CaveRace.CaveRace.State;
 import com.heartpirates.CaveRace.Jeeves;
-import com.heartpirates.CaveRace.Replay;
 import com.heartpirates.CaveRace.Sprite;
 
 public class MenuScreen extends Screen {
 
-	int ship = 0;
+	public int ship = 0;
 	int maxShips = 6;
 
 	int replaySel = 0;
 
 	enum Selection {
-		START, REPLAYS, SCORE, SHIP
+		SHIP, START, REPLAYS, TOPSCORES, PROFILE, GHOSTMODE
 	}
 
-	Selection sel = Selection.START;
+	Selection sel = Selection.SHIP;
 	Selection lastSel = sel;
+
+	public enum Mode {
+		PERSONAL, WORLDWIDE, NONE
+	}
+
+	public Mode mode = Mode.PERSONAL;
 
 	public MenuScreen(CaveRace main, int w, int h) {
 		super(main, w, h);
@@ -98,13 +102,18 @@ public class MenuScreen extends Screen {
 		}
 
 		// draw selections
-		for (int i = 0; i < 4; i++) {
-			int y = 10 + i * 9 + 6;
-			int x = w / 2 + 9;
+		for (int i = 0; i < Selection.values().length; i++) {
+			int y = 9 + i * 9 + 6;
+			int x = w / 2 + 9 - 14;
 			String str = Selection.values()[i].toString();
 			if (sel.ordinal() == i) {
-				g.drawString(">", x - 12, y);
-				g.drawString("  " + str, x - 18, y);
+				if (sel == Selection.GHOSTMODE) {
+					g.drawString(">", x - 12, y);
+					g.drawString("  " + mode.name(), x - 18, y);
+				} else {
+					g.drawString(">", x - 12, y);
+					g.drawString("  " + str, x - 18, y);
+				}
 			} else {
 				g.drawString(str, x, y);
 			}
@@ -131,32 +140,17 @@ public class MenuScreen extends Screen {
 				// render selected ship (BIG)
 				if (i == ship) {
 					c.r = 14;
-					BufferedImage img = s.image;
-					g.drawImage(img, 16 - 4 + 2, 0, img.getWidth() * 3,
-							img.getHeight() * 3, null);
 				} else {
 					c.r = 11;
 				}
 			}
 		}
 
+		BufferedImage img = Jeeves.i.ships[ship][0];
+		g.drawImage(img, 16 - 4 + 2, 0, img.getWidth() * 3,
+				img.getHeight() * 3, null);
+
 		if (sel == Selection.REPLAYS) {
-			AppData ad = game.getAppData();
-			for (int i = 0; i < 10; i++) {
-				Replay r = ad.getReplay(replaySel + i);
-				if (r == null)
-					continue;
-				g.setColor(new Color(0x94B51E));
-				int x = 10;
-				int y = 10 + i * 10;
-				g.drawString(r.name, x, y);
-				int ship = (r.ship + i) % 6;
-				if (ship == 5)
-					x += 0;
-				BufferedImage img = Jeeves.i.ships[ship][0];
-				g.drawImage(img, x - 9, y - 9, img.getWidth(), img.getHeight(),
-						null);
-			}
 		}
 
 		lastSel = sel;
@@ -223,7 +217,13 @@ public class MenuScreen extends Screen {
 
 			if (sel == Selection.START) {
 				Audio.play("Start2");
-				CaveRace.gameState = CaveRace.State.RESTART;
+				game.setGameState(State.RESTART);
+			} else if (sel == Selection.REPLAYS) {
+				game.setGameState(State.MENU_REPLAY);
+				return;
+			} else if (sel == Selection.TOPSCORES) {
+				game.setGameState(State.MENU_HIGHSCORES);
+				return;
 			} else {
 				Audio.play("Error");
 			}
@@ -238,6 +238,13 @@ public class MenuScreen extends Screen {
 					ship += maxShips;
 				System.out.println("ship: " + ship);
 			}
+			if (sel == Selection.GHOSTMODE) {
+				int len = Mode.values().length;
+				int n = mode.ordinal() + 1;
+				while (n >= len)
+					n -= len;
+				mode = Mode.values()[n];
+			}
 		}
 
 		if (keys[LEFT]) {
@@ -249,6 +256,14 @@ public class MenuScreen extends Screen {
 					ship -= maxShips;
 				System.out.println("ship: " + ship);
 			}
+			if (sel == Selection.GHOSTMODE) {
+				int len = Mode.values().length;
+				int n = mode.ordinal() - 1;
+				while (n < 0)
+					n += len;
+				mode = Mode.values()[n];
+			}
+
 		}
 
 		if (keys[UP]) {
@@ -274,7 +289,7 @@ public class MenuScreen extends Screen {
 
 	@Override
 	public void onSwitch() {
-		now = System.currentTimeMillis() + 200;
+		now = System.currentTimeMillis() + 150;
 	}
 
 }

@@ -41,6 +41,7 @@ public class Recorder {
 		replay.seed = this.seed;
 		replay.length = getLength();
 		replay.bytes = toBytes();
+		replay.time = System.currentTimeMillis();
 
 		return replay;
 	}

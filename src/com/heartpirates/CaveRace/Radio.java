@@ -26,24 +26,30 @@ public class Radio implements Runnable {
 	private float defaultVolume = 0.8f;
 	private final Thread t = new Thread(this);
 
+	private String nowPlaying = "";
+
+	private final Object lock = new Object();
+
 	@Override
 	public void run() {
 		byte[] bytes = new byte[1024 << 3];
 
 		while (true) {
 
-			if (playing.get()) {
-				int d;
-				d = this.asap.generate(bytes, bytes.length, 1);
-				this.line.write(bytes, 0, d);
+			synchronized (lock) {
+				if (playing.get()) {
+					int d;
+					d = this.asap.generate(bytes, bytes.length, 1);
+					this.line.write(bytes, 0, d);
 
-				if (d != bytes.length) {
-					playing.set(false);
+					if (d != bytes.length) {
+						playing.set(false);
+					}
 				}
 			}
 
 			try {
-				Thread.sleep(30);
+				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -51,30 +57,34 @@ public class Radio implements Runnable {
 	}
 
 	public void stopMusic() {
-		if (playing.get()) {
-			playing.set(false);
-			this.line.stop();
-			System.out.println("Music stopped.");
+		synchronized (lock) {
+			if (playing.get()) {
+				playing.set(false);
+				this.line.stop();
+				System.out.println("Music stopped.");
+			}
 		}
 	}
 
 	void loadMusic(String name) {
-		System.out.println("Loading sounds...");
-		byte[] bytes;
-		int length;
+		synchronized (lock) {
+			System.out.println("Loading sounds...");
+			byte[] bytes;
+			int length;
 
-		try {
-			URL url = this.getClass().getClassLoader().getResource(name);
-			InputStream is = url.openStream();
-			bytes = new byte[65 * 1024];
-			length = readAndClose(is, bytes);
+			try {
+				URL url = this.getClass().getClassLoader().getResource(name);
+				InputStream is = url.openStream();
+				bytes = new byte[65 * 1024];
+				length = readAndClose(is, bytes);
 
-			loadAsapMusic(name, bytes, length);
+				loadAsapMusic(name, bytes, length);
 
-			setVolume(defaultVolume);
-		} catch (IOException ioex) {
-			System.out.println("Failed to load Music!");
-			return;
+				setVolume(defaultVolume);
+			} catch (IOException ioex) {
+				System.out.println("Failed to load Music!");
+				return;
+			}
 		}
 	}
 
@@ -105,12 +115,14 @@ public class Radio implements Runnable {
 	}
 
 	public void playMusic() {
-		if (!playing.get()) {
-			this.playing.set(true);
-			this.line.start();
-			System.out.println("Playing Music.");
-			if (!t.isAlive()) {
-				t.start();
+		synchronized (lock) {
+			if (!playing.get()) {
+				this.playing.set(true);
+				this.line.start();
+				System.out.println("Playing Music.");
+				if (!t.isAlive()) {
+					t.start();
+				}
 			}
 		}
 	}
@@ -176,12 +188,24 @@ public class Radio implements Runnable {
 	}
 
 	public void loadAndPlay(String name) {
+		if (name.equalsIgnoreCase(nowPlaying)) {
+			System.out.println("Song already playing.");
+			return;
+		}
+		
 		try {
 			stopMusic();
+			Thread.sleep(20);
 			loadMusic(name);
+			Thread.sleep(20);
+			nowPlaying = name;
 			playMusic();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public String getNowPlaying() {
+		return nowPlaying;
 	}
 }

@@ -64,7 +64,7 @@ public class Player extends Entity {
 			_visible = !_visible;
 		}
 
-		if (_visible)
+		if (_visible && !remove)
 			super.render(g);
 	}
 
