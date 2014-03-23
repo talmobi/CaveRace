@@ -52,6 +52,7 @@ public class ReplayOverScreen extends TitleScreen {
 			now = System.currentTimeMillis();
 			pos = -20;
 		}
+		
 		if (game.keyboard.keys[KeyEvent.VK_ENTER]) {
 			now = System.currentTimeMillis();
 			switch (sel) {
@@ -71,7 +72,9 @@ public class ReplayOverScreen extends TitleScreen {
 				Audio.play("Blip1");
 				break;
 			}
+			return;
 		}
+		
 		if (game.keyboard.keys[KeyEvent.VK_DOWN]) {
 			now = System.currentTimeMillis();
 			Audio.play("Blip1");

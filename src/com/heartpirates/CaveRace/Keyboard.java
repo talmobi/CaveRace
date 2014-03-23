@@ -55,11 +55,31 @@ public class Keyboard implements KeyListener {
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
 		keys[key] = true;
+
+		if (key >= KeyEvent.VK_A && key <= KeyEvent.VK_Z) {
+			keytyped = true;
+			lastTyped = "" + ((char) key);
+		}
 	}
+
+	boolean keytyped = false;
+	String lastTyped = "";
 
 	@Override
 	public void keyReleased(KeyEvent e) {
 		int key = e.getKeyCode();
 		keys[key] = false;
+	}
+
+	public boolean keyTyped() {
+		if (keytyped) {
+			keytyped = false;
+			return true;
+		}
+		return false; 
+	}
+
+	public String lastTyped() {
+		return lastTyped;
 	}
 }

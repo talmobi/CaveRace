@@ -30,6 +30,9 @@ public class Audio {
 
 	public HashMap<String, Sound> clips;
 	public static Audio i = null;
+	
+	public int shipNumber = 0;
+	public String playerName = "Anon";
 
 	public Audio() {
 		clips = loadSoundsFromFileSystem();

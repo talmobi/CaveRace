@@ -25,6 +25,7 @@ import com.heartpirates.CaveRace.net.Network;
 import com.heartpirates.CaveRace.screens.GameOverScreen;
 import com.heartpirates.CaveRace.screens.HighScoreScreen;
 import com.heartpirates.CaveRace.screens.MenuScreen;
+import com.heartpirates.CaveRace.screens.ProfileScreen;
 import com.heartpirates.CaveRace.screens.ReplayOverScreen;
 import com.heartpirates.CaveRace.screens.ReplayScreen;
 import com.heartpirates.CaveRace.screens.Screen;
@@ -41,6 +42,8 @@ public class CaveRace extends Canvas implements Runnable {
 
 	public static final int SCREEN_WIDTH = WIDTH * SCALE;
 	public static final int SCREEN_HEIGHT = HEIGHT * SCALE;
+	
+	public static String PLAYER_NAME = "Anon";
 
 	public static String NAME = "Cave Race";
 
@@ -69,6 +72,7 @@ public class CaveRace extends Canvas implements Runnable {
 	int[] pixels = ((DataBufferInt) screen.getRaster().getDataBuffer())
 			.getData();
 
+	ProfileScreen profileScreen = new ProfileScreen(this, WIDTH, HEIGHT);
 	Screen titleScreen = new TitleScreen(this, WIDTH, HEIGHT);
 	MenuScreen menuScreen = new MenuScreen(this, WIDTH, HEIGHT);
 	public boolean showGameOver = false;
@@ -92,7 +96,7 @@ public class CaveRace extends Canvas implements Runnable {
 	long keyPressTime = System.currentTimeMillis();
 
 	public enum State {
-		TITLE, MENU, PLAY, PAUSED, RESTART, MENU_REPLAY, PLAY_REPLAY, MENU_HIGHSCORES
+		TITLE, MENU, PLAY, PAUSED, RESTART, MENU_REPLAY, PLAY_REPLAY, MENU_HIGHSCORES, MENU_PROFILE
 	}
 
 	private State gameState = State.TITLE;
@@ -104,7 +108,7 @@ public class CaveRace extends Canvas implements Runnable {
 	public CaveRace() {
 		try {
 			CaveRace.network = new Network();
-			
+
 			this.TITLE_FONT = Font.createFont(
 					Font.TRUETYPE_FONT,
 					this.getClass().getClassLoader()
@@ -128,6 +132,10 @@ public class CaveRace extends Canvas implements Runnable {
 			appData.successfullyLoaded = false;
 			e.printStackTrace();
 		}
+		
+		CaveRace.PLAYER_NAME = appData.playerName;
+		menuScreen.ship = appData.shipNum;
+		profileScreen.name = appData.playerName;
 	}
 
 	public void init() throws IOException {
@@ -332,6 +340,14 @@ public class CaveRace extends Canvas implements Runnable {
 			}
 			menuScreen.tick();
 		}
+		
+		else if (gameState == State.MENU_PROFILE) {
+			if (lastState != gameState) {
+				profileScreen.onSwitch();
+				jeeves.radio.loadAndPlay("mus/Return_of_Atarians.sap");
+			}
+			profileScreen.tick();
+		}
 
 		else if (gameState == State.MENU_REPLAY) {
 			if (lastState != gameState) {
@@ -437,8 +453,11 @@ public class CaveRace extends Canvas implements Runnable {
 	}
 
 	public void prepareReplay() {
-		if (replay == null)
+		if (replay == null) {
+			setGameState(State.MENU);
 			return;
+		}
+		
 		ghostpilot.reset();
 		ghostpilot.image = Jeeves.i.ships[replay.ship][0];
 		showGameOver = false;
@@ -488,6 +507,7 @@ public class CaveRace extends Canvas implements Runnable {
 			@Override
 			public void run() {
 				Replay replay = player.rec.getReplay();
+				replay.name = appData.playerName;
 				replay.ship = shipid;
 				appData.addReplay(replay);
 				saveAppData();
@@ -515,6 +535,9 @@ public class CaveRace extends Canvas implements Runnable {
 			break;
 		case MENU_HIGHSCORES:
 			highScoreScreen.render(g);
+			break;
+		case MENU_PROFILE:
+			profileScreen.render(g);
 			break;
 
 		case PAUSED:
@@ -585,7 +608,7 @@ public class CaveRace extends Canvas implements Runnable {
 		}
 
 		CaveRace game = new CaveRace();
-		
+
 		try {
 			game.init();
 		} catch (IOException e1) {
@@ -596,6 +619,8 @@ public class CaveRace extends Canvas implements Runnable {
 		try {
 			game.start();
 		} catch (Exception e) {
+			game.appData.playerName = game.profileScreen.name;
+			game.appData.shipNum = game.menuScreen.ship;
 			AppData.save(game.appData, ".AppDataBackup");
 		}
 	}

@@ -50,7 +50,6 @@ public class ReplayScreen extends Screen {
 			game.level = newLevel;
 
 			game.setGameState(State.PLAY_REPLAY);
-
 			return;
 		}
 

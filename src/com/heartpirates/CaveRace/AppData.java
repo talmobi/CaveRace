@@ -19,8 +19,11 @@ public class AppData {
 
 	static boolean successfullyLoaded = false;
 
-	String password;
-	int id;
+	public String password;
+	public int id;
+	
+	public String playerName = "Anon";
+	public int shipNum = 0;
 
 	// World id, Score / Distance
 	// HashMap<Integer, Integer> levelMap = new HashMap<Integer, Integer>();

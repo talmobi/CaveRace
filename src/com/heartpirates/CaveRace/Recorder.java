@@ -36,7 +36,8 @@ public class Recorder {
 	public Replay getReplay() {
 		Replay replay = new Replay();
 
-		replay.name = name;
+		replay.name = CaveRace.PLAYER_NAME;
+		
 		replay.id = id;
 		replay.seed = this.seed;
 		replay.length = getLength();

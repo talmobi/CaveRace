@@ -224,6 +224,9 @@ public class MenuScreen extends Screen {
 			} else if (sel == Selection.TOPSCORES) {
 				game.setGameState(State.MENU_HIGHSCORES);
 				return;
+			} else if (sel == Selection.PROFILE) {
+				game.setGameState(State.MENU_PROFILE);
+				return;
 			} else {
 				Audio.play("Error");
 			}
@@ -285,6 +288,8 @@ public class MenuScreen extends Screen {
 				n -= vals.length;
 			sel = vals[n];
 		}
+		
+		game.getAppData().shipNum = ship;
 	}
 
 	@Override
