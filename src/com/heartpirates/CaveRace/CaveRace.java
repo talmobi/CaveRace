@@ -196,6 +196,8 @@ public class CaveRace extends Canvas implements Runnable {
 
 			replay = appData.getHighScoreReplay(1);
 		}
+		
+		this.requestFocus();
 	}
 
 	public void saveAppData() {
