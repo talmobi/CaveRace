@@ -38,6 +38,8 @@ public class Network {
 		Input input = new Input(gzipis);
 
 		Data data = kryo.readObject(input, Data.class);
+		input.close();
+		
 		return data;
 	}
 

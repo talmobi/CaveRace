@@ -9,7 +9,7 @@ import java.util.Random;
 public class Level {
 
 	public int world = 1;
-	
+
 	double x = 0;
 	double y = 0;
 
@@ -47,27 +47,27 @@ public class Level {
 	public int tickCount = 0;
 
 	double speed = 3.0;
-	
+
 	protected long seed = 1L;
 	protected int pathSize = 5;
 
 	protected final CaveRace main;
 
-//	public Level(CaveRace main, int w, int h) {
-//		this.main = main;
-//		this.random.setSeed(this.seed);
-//		this.width = w;
-//		this.height = h;
-//		map = newMap();
-//		nextMap = newMap();
-//		img = map.getImage();
-//		nextImg = nextMap.getImage();
-//		blockMap = new boolean[width][height];
-//		updateBlockmap();
-//		updateAutopilots();
-//
-//		initLevel();
-//	}
+	// public Level(CaveRace main, int w, int h) {
+	// this.main = main;
+	// this.random.setSeed(this.seed);
+	// this.width = w;
+	// this.height = h;
+	// map = newMap();
+	// nextMap = newMap();
+	// img = map.getImage();
+	// nextImg = nextMap.getImage();
+	// blockMap = new boolean[width][height];
+	// updateBlockmap();
+	// updateAutopilots();
+	//
+	// initLevel();
+	// }
 
 	public Level(CaveRace main, int w, int h, long seed) {
 		this.seed = seed;
@@ -103,7 +103,7 @@ public class Level {
 			mapCount++;
 			x = 0;
 			nextLevel2();
- 			calculatePathSize();
+			calculatePathSize();
 
 			// buffer more maps if necessary
 			if (levelThread != null)
@@ -113,7 +113,7 @@ public class Level {
 		updateBlockmap();
 		updateAutopilots();
 	}
-	
+
 	List<Map> mapList = new LinkedList<Map>();
 	List<BufferedImage> mapImgList = new LinkedList<BufferedImage>();
 	protected int mapCounter = 0;
@@ -140,8 +140,8 @@ public class Level {
 						BufferedImage mapImg = map.getImage();
 						mapList.add(map);
 						mapImgList.add(mapImg);
-//						System.out.printf("Added map. [%s/%s]\n",
-//								mapList.size(), mapLimit);
+						// System.out.printf("Added map. [%s/%s]\n",
+						// mapList.size(), mapLimit);
 					}
 
 					try {
@@ -153,11 +153,23 @@ public class Level {
 			}
 		});
 
-		levelThread.setPriority(Thread.MIN_PRIORITY);
-		levelThread.start();
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 		nextLevel2();
 		nextLevel2();
+		
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		levelThread.setPriority(Thread.MIN_PRIORITY);
+		levelThread.start();
 	}
 
 	private void nextLevel2() {

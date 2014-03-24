@@ -77,6 +77,7 @@ public class Restful {
 				System.out.println("Replays: " + data.replays.length);
 				System.out.println("Name: " + replay.name + ", Ship: "
 						+ replay.ship + ", Length: " + replay.bytes.length);
+				System.out.println("\r\n\r\n");
 				System.out.close();
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -182,12 +182,11 @@ public class HighScoreScreen extends Screen implements ActionListener {
 	boolean blink = true;
 
 	Client client = null;
+	Thread updateThread = null;
 
 	@Override
 	public void onSwitch() {
 		now = System.currentTimeMillis() + 150;
-		client = new Client(CaveRace.network);
-		client.addListener(this);
 
 		// client.postReplay = game.getAppData().getHighScoreReplay(
 		// game.level.world);
@@ -196,21 +195,36 @@ public class HighScoreScreen extends Screen implements ActionListener {
 		data.id = Data.ID.POST;
 
 		Replay replay = game.getAppData().getHighScoreReplay(game.level.world);
+
 		data.replays = new Replay[] { replay };
 
 		loading = true;
 		loadingIndex = 0;
 
-		new Thread(new Runnable() {
+		if (updateThread != null) {
+			updateThread.interrupt();
+		}
+
+		if (client != null) {
+			client.addListener(null);
+		}
+
+		client = new Client(CaveRace.network);
+		client.addListener(this);
+
+		updateThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				loadingIndex = 1;
 				while (true) {
 					try {
 						client.send(data);
-						Thread.sleep(200);
 						break;
 					} catch (Exception e) {
+						try {
+							Thread.sleep(300);
+						} catch (InterruptedException e1) {
+						}
 						e.printStackTrace();
 					}
 				}
@@ -219,16 +233,21 @@ public class HighScoreScreen extends Screen implements ActionListener {
 				while (true) {
 					try {
 						client.getTop();
-						Thread.sleep(200);
 						break;
 					} catch (Exception e) {
+						try {
+							Thread.sleep(300);
+						} catch (InterruptedException e1) {
+						}
 						e.printStackTrace();
 					}
 				}
 
 				loading = false;
 			}
-		}).start();
+		});
+
+		updateThread.start();
 	}
 
 	@Override

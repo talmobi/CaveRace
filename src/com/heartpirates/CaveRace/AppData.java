@@ -21,7 +21,7 @@ public class AppData {
 
 	public String password;
 	public int id;
-	
+
 	public String playerName = "Anon";
 	public int shipNum = 0;
 	public int ghostMode = 0;
@@ -121,13 +121,18 @@ public class AppData {
 		Replay rep = null;
 		for (int i = 0; i < tempReplays.size(); i++) {
 			Replay tempRep = tempReplays.get(i);
-			int tempScore = tempRep.length;
+			if (!tempRep.name.equalsIgnoreCase(playerName))
+				continue;
+			int tempScore = tempRep.bytes.length;
 			if (tempScore > score) {
 				score = tempScore;
 				rep = tempRep;
 			}
 		}
 
+		if (rep != null)
+			System.out.println("Retuing replay: " + rep.name + ", score: "
+					+ rep.bytes.length);
 		return rep;
 	}
 
