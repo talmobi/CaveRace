@@ -336,6 +336,17 @@ public class CaveRace extends Canvas implements Runnable {
 
 			if (keys[KeyEvent.VK_SPACE] || keys[KeyEvent.VK_ENTER]) {
 				newState = State.MENU;
+			} else
+			if (keys[KeyEvent.VK_ESCAPE]) {
+				saveAppData();
+				
+				try {
+					Thread.sleep(300);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				
+				System.exit(0);
 			}
 		}
 

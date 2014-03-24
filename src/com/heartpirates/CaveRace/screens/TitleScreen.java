@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 
 import com.heartpirates.CaveRace.CaveRace;
+import com.heartpirates.CaveRace.CaveRace.State;
 
 public class TitleScreen extends Screen {
 
@@ -21,7 +22,7 @@ public class TitleScreen extends Screen {
 		pos = -20;
 		ticks = 0;
 	}
-
+	
 	Color txtColor = new Color(0x79ABFF);
 
 	@Override

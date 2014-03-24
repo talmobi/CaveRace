@@ -240,6 +240,7 @@ public class MenuScreen extends Screen {
 				while (ship < 0)
 					ship += maxShips;
 				System.out.println("ship: " + ship);
+				game.getAppData().shipNum = ship;
 			}
 			if (sel == Selection.GHOSTMODE) {
 				int len = Mode.values().length;
@@ -259,6 +260,7 @@ public class MenuScreen extends Screen {
 				while (ship >= maxShips)
 					ship -= maxShips;
 				System.out.println("ship: " + ship);
+				game.getAppData().shipNum = ship;
 			}
 			if (sel == Selection.GHOSTMODE) {
 				int len = Mode.values().length;
@@ -290,8 +292,11 @@ public class MenuScreen extends Screen {
 				n -= vals.length;
 			sel = vals[n];
 		}
-		
-		game.getAppData().shipNum = ship;
+
+		if (keys[KeyEvent.VK_BACK_SPACE] || keys[KeyEvent.VK_ESCAPE]) {
+			game.setGameState(State.TITLE);
+			return;
+		}
 	}
 
 	@Override
