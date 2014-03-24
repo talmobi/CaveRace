@@ -56,7 +56,8 @@ public class Keyboard implements KeyListener {
 		int key = e.getKeyCode();
 		keys[key] = true;
 
-		if (key >= KeyEvent.VK_A && key <= KeyEvent.VK_Z) {
+		if ((key >= KeyEvent.VK_A && key <= KeyEvent.VK_Z)
+				|| (key >= KeyEvent.VK_0 && key <= KeyEvent.VK_9) || key == KeyEvent.VK_PERIOD || key == KeyEvent.VK_MINUS) {
 			keytyped = true;
 			lastTyped = "" + ((char) key);
 		}
@@ -76,7 +77,7 @@ public class Keyboard implements KeyListener {
 			keytyped = false;
 			return true;
 		}
-		return false; 
+		return false;
 	}
 
 	public String lastTyped() {

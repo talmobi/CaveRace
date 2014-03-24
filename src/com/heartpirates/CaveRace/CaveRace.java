@@ -42,7 +42,7 @@ public class CaveRace extends Canvas implements Runnable {
 
 	public static final int SCREEN_WIDTH = WIDTH * SCALE;
 	public static final int SCREEN_HEIGHT = HEIGHT * SCALE;
-	
+
 	public static String PLAYER_NAME = "Anon";
 
 	public static String NAME = "Cave Race";
@@ -92,6 +92,7 @@ public class CaveRace extends Canvas implements Runnable {
 
 	public final Color bgColor = new Color(0x202020);
 	public final Color fgColor = new Color(0xCFBFAD);
+	public final Color ldColor = Color.WHITE;
 
 	long keyPressTime = System.currentTimeMillis();
 
@@ -132,10 +133,15 @@ public class CaveRace extends Canvas implements Runnable {
 			appData.successfullyLoaded = false;
 			e.printStackTrace();
 		}
-		
+
 		CaveRace.PLAYER_NAME = appData.playerName;
 		menuScreen.ship = appData.shipNum;
 		profileScreen.name = appData.playerName;
+		menuScreen.mode = MenuScreen.Mode.values()[appData.ghostMode];
+
+		if (CaveRace.PLAYER_NAME.equalsIgnoreCase("anon")) {
+			setGameState(State.MENU_PROFILE);
+		}
 	}
 
 	public void init() throws IOException {
@@ -340,7 +346,7 @@ public class CaveRace extends Canvas implements Runnable {
 			}
 			menuScreen.tick();
 		}
-		
+
 		else if (gameState == State.MENU_PROFILE) {
 			if (lastState != gameState) {
 				profileScreen.onSwitch();
@@ -454,10 +460,11 @@ public class CaveRace extends Canvas implements Runnable {
 
 	public void prepareReplay() {
 		if (replay == null) {
-			setGameState(State.MENU);
+			if (gameState == State.PLAY_REPLAY)
+				setGameState(State.MENU);
 			return;
 		}
-		
+
 		ghostpilot.reset();
 		ghostpilot.image = Jeeves.i.ships[replay.ship][0];
 		showGameOver = false;

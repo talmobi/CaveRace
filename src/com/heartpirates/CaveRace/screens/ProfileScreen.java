@@ -62,11 +62,14 @@ public class ProfileScreen extends Screen {
 		else
 			blink = false;
 
-		g.drawString("Enter your name", 10, 20);
+		g.drawString("Enter your name", 7, 20);
+		g.drawString("(For Leaderboards)", 1, 30);
 
+		if (name.length() > 9)
+			name = name.substring(0, 9);
 		if (blink)
-			g.drawString(name + "|", 15, 35);
+			g.drawString("name: " + name + "|", 13, 50);
 		else
-			g.drawString(name, 15, 35);
+			g.drawString("name: " + name, 13, 50);
 	}
 }

@@ -247,6 +247,7 @@ public class MenuScreen extends Screen {
 				while (n >= len)
 					n -= len;
 				mode = Mode.values()[n];
+				game.getAppData().ghostMode = mode.ordinal();
 			}
 		}
 
@@ -265,6 +266,7 @@ public class MenuScreen extends Screen {
 				while (n < 0)
 					n += len;
 				mode = Mode.values()[n];
+				game.getAppData().ghostMode = mode.ordinal();
 			}
 
 		}

@@ -33,6 +33,9 @@ public class HighScoreScreen extends Screen implements ActionListener {
 
 	List<Replay> list = null;
 
+	boolean loading = false;
+	int loadingIndex = 0;
+
 	@Override
 	public void tick() {
 		if (!(System.currentTimeMillis() - now > pressDelay))
@@ -153,7 +156,30 @@ public class HighScoreScreen extends Screen implements ActionListener {
 		g.fillRect(0, 0, 120, 11);
 		g.setColor(game.fgColor);
 		g.drawString("NAME     SCORE", 10, 10);
+
+		g.setColor(game.ldColor);
+		if (loading) {
+			int x = 33;
+			int y = 37;
+
+			if ((System.currentTimeMillis() / 1000) % 2 == 0)
+				blink = true;
+			else
+				blink = false;
+
+			if (blink)
+				x += 3;
+
+			String s = "";
+			for (int i = 0; i < loadingIndex; i++) {
+				s += " .";
+			}
+			g.drawString("loading" + s, x, y);
+		}
+		g.setColor(game.fgColor);
 	}
+
+	boolean blink = true;
 
 	Client client = null;
 
@@ -168,19 +194,43 @@ public class HighScoreScreen extends Screen implements ActionListener {
 		// client.start();
 		final Data data = new Data();
 		data.id = Data.ID.POST;
-		
+
 		Replay replay = game.getAppData().getHighScoreReplay(game.level.world);
 		data.replays = new Replay[] { replay };
-		
+
+		loading = true;
+		loadingIndex = 0;
+
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				client.send(data);
-				client.getTop();
+				loadingIndex = 1;
+				while (true) {
+					try {
+						client.send(data);
+						Thread.sleep(200);
+						break;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				loadingIndex = 2;
+
+				while (true) {
+					try {
+						client.getTop();
+						Thread.sleep(200);
+						break;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				loading = false;
 			}
 		}).start();
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		System.out.println("ACTIION PERFORMED");

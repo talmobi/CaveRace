@@ -24,6 +24,7 @@ public class AppData {
 	
 	public String playerName = "Anon";
 	public int shipNum = 0;
+	public int ghostMode = 0;
 
 	// World id, Score / Distance
 	// HashMap<Integer, Integer> levelMap = new HashMap<Integer, Integer>();
